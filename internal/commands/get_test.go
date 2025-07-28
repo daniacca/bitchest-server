@@ -52,3 +52,7 @@ type mockValue struct{}
 func (m *mockValue) Type() db.ValueType {
 	return "mock"
 }
+
+func (m *mockValue) IsExpired() bool {
+	return false
+}

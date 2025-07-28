@@ -10,7 +10,7 @@ run:
 
 # Compile the executable
 build:
-	go build -o $(APP_NAME) cmd/server/main.go
+	go build -o ./out/$(APP_NAME) cmd/server/main.go
 
 # Run tests
 test:

@@ -1,6 +1,9 @@
 package db
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type InMemoryDB struct {
 	data map[string]Value
@@ -23,15 +26,31 @@ func (db *InMemoryDB) Get(key string) (Value, bool) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 	val, ok := db.data[key]
-	return val, ok
+	if !ok {
+		return nil, false
+	}
+	
+	if val.IsExpired() {
+		// Remove expired key (we need to upgrade to write lock)
+		db.mu.RUnlock()
+		db.mu.Lock()
+		delete(db.data, key)
+		db.mu.Unlock()
+		db.mu.RLock() // Re-acquire read lock, since we're in a defer
+		return nil, false
+	}
+	
+	return val, true
 }
 
 func (db *InMemoryDB) Keys() []string {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 	keys := make([]string, 0, len(db.data))
-	for k := range db.data {
-		keys = append(keys, k)
+	for k, v := range db.data {
+		if !v.IsExpired() {
+			keys = append(keys, k)
+		}
 	}
 	return keys
 }
@@ -50,4 +69,73 @@ func (db *InMemoryDB) FlushAll() {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	db.data = make(map[string]Value)
+}
+
+func (db *InMemoryDB) SetExpiration(key string, seconds int) bool {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	
+	val, exists := db.data[key]
+	if !exists {
+		return false
+	}
+	
+	// Set expiration time
+	expireAt := time.Now().Add(time.Duration(seconds) * time.Second)
+	
+	// Handle different value types
+	switch v := val.(type) {
+	case *StringValue:
+		v.ExpireAt = &expireAt
+	default:
+		// For now, only StringValue supports expiration
+		return false
+	}
+	
+	return true
+}
+
+func (db *InMemoryDB) GetTTL(key string) int {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+	
+	val, exists := db.data[key]
+	if !exists {
+		return -2 // Key doesn't exist
+	}
+	
+	if val.IsExpired() {
+		return -2 // Key is expired
+	}
+	
+	// Handle different value types
+	switch v := val.(type) {
+	case *StringValue:
+		if v.ExpireAt == nil {
+			return -1 // No expiration set
+		}
+		ttl := int(v.ExpireAt.Sub(time.Now()).Seconds())
+		if ttl < 0 {
+			return -2 // Expired
+		}
+		return ttl
+	default:
+		return -1 // No expiration support for this type
+	}
+}
+
+// CleanupExpired removes all expired keys from the database
+func (db *InMemoryDB) CleanupExpired() int {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	
+	removed := 0
+	for key, val := range db.data {
+		if val.IsExpired() {
+			delete(db.data, key)
+			removed++
+		}
+	}
+	
+	return removed
 }

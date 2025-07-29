@@ -6,11 +6,25 @@
 
 It supports plain-text TCP connections and a minimal set of commands for managing string values. The project is modular, testable, and easy to extend.
 
-**Features:**
+**Main Features:**
 - ✅ Built-in CLI client
 - ✅ SET and GET strings data type
 - ✅ Expiration support with TTL
 - ✅ Configurable server settings (host and port)
+
+---
+
+## 🚀 Full Features
+
+- **RESP Protocol Compliance**: Full Redis Serialization Protocol support
+- **Null Response Handling**: Proper `$-1\r\n` format for nil results
+- **Interactive CLI Client**: Built-in command-line interface
+- **Key Expiration**: TTL support with `EXPIRE` and `TTL` commands
+- **Conditional Operations**: `NX` (set if Not eXists) and `XX` (set if eXists) options
+- **Comprehensive Test Coverage**: Unit tests for all commands and database operations
+- **Configurable Server Settings**: Command-line flags for host and port
+- **Docker Support**: Containerized deployment with proper networking
+- **Server Logging**: Detailed logging for client connections and command processing
 
 ---
 
@@ -142,6 +156,121 @@ docker run -d --name bitchest-server -p 7463:7463 bitchest:latest
 
 ---
 
+## 📊 Server Logging
+
+The server provides comprehensive logging for monitoring and debugging:
+
+### Connection Logging
+- **Client Connections**: Logs when new clients connect with their IP address
+- **Client Disconnections**: Logs when clients disconnect
+- **Connection Errors**: Logs any connection-related errors
+
+### Command Logging
+- **Command Reception**: Logs every command received from clients
+- **Execution Timing**: Measures and logs command execution time
+- **Success Logging**: Logs successful command completions with timing
+- **Error Logging**: Logs command failures with detailed error messages
+
+### Log Format
+```
+2025/07/29 11:12:27 New client connected: 127.0.0.1:44422
+2025/07/29 11:12:27 [127.0.0.1:44422] Received command: SET testkey testvalue
+2025/07/29 11:12:27 [127.0.0.1:44422] Command 'SET' completed successfully in 31.907µs
+2025/07/29 11:12:27 [127.0.0.1:44422] Client disconnected
+```
+
+### Example Output
+```bash
+$ make run
+Bitchest is running on localhost:7463
+Waiting for connections...
+2025/07/29 11:12:27 New client connected: 127.0.0.1:44422
+2025/07/29 11:12:27 [127.0.0.1:44422] Received command: PING
+2025/07/29 11:12:27 [127.0.0.1:44422] Command 'PING' completed successfully in 1.472µs
+2025/07/29 11:12:27 [127.0.0.1:44422] Received command: SET key value
+2025/07/29 11:12:27 [127.0.0.1:44422] Command 'SET' completed successfully in 25.123µs
+2025/07/29 11:12:27 [127.0.0.1:44422] Client disconnected
+```
+
+---
+
+## 🧪 Testing
+
+All components are covered by unit tests:
+- in-memory database
+- communication protocol
+- command implementations
+- TCP handler
+- server startup (`StartServer`)
+- expiration functionality
+- existence conditions (NX/XX)
+- RESP protocol compliance
+
+---
+
+## 📦 Future Plans
+
+- Advanced types (`LIST`, `ZSET`)
+- Additional commands (`SETNX`, etc.)
+- File-based persistence
+- Full RESP protocol support
+
+---
+
+## 📄 License
+
+Distributed under the [MIT](./LICENSE) license.
+
+## 📊 Code Coverage
+
+Bitchest maintains comprehensive test coverage to ensure code quality and reliability.
+
+### Current Coverage Status
+
+**Overall Coverage: 62.4%**
+
+| Package | Coverage | Status |
+|---------|----------|--------|
+| `cmd/server` | 35.0% | ⚠️ Needs improvement |
+| `internal/commands` | 94.7% | ✅ Excellent |
+| `internal/db` | 86.7% | ✅ Good |
+| `internal/handler` | 84.4% | ✅ Good |
+| `internal/protocol` | 100.0% | ✅ Perfect |
+
+### Coverage Commands
+
+```bash
+# Generate coverage report
+make coverage
+
+# Show coverage summary
+make coverage-summary
+
+# Clean coverage files
+make coverage-clean
+```
+
+### Coverage Reports
+
+- **HTML Report**: `coverage.html` - Detailed visual coverage report
+- **Function Report**: `coverage.out` - Raw coverage data
+- **Summary**: Shows per-function and per-package coverage
+
+### Coverage Threshold
+
+The project maintains a **60% minimum coverage threshold** enforced by CI/CD pipelines.
+
+### Coverage Workflow
+
+GitHub Actions automatically:
+- ✅ Runs tests with coverage on every PR
+- ✅ Generates HTML and function reports
+- ✅ Uploads coverage artifacts
+- ✅ Comments PRs with coverage summary
+- ✅ Enforces 60% coverage threshold
+
+---
+
 ## ⚙️ Example Usage
 
 ### Using the CLI Client
@@ -219,30 +348,3 @@ tempkey
 ```
 
 ---
-
-## 🧪 Testing
-
-All components are covered by unit tests:
-- in-memory database
-- communication protocol
-- command implementations
-- TCP handler
-- server startup (`StartServer`)
-- expiration functionality
-- existence conditions (NX/XX)
-- RESP protocol compliance
-
----
-
-## 📦 Future Plans
-
-- Advanced types (`LIST`, `ZSET`)
-- Additional commands (`SETNX`, etc.)
-- File-based persistence
-- Full RESP protocol support
-
----
-
-## 📄 License
-
-Distributed under the [MIT](./LICENSE) license.

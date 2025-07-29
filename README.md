@@ -10,16 +10,22 @@ It supports plain-text TCP connections and a minimal set of commands for managin
 
 ## 🚀 Supported Commands
 
-| Command                      | Description                                          |
-|------------------------------|------------------------------------------------------|
-| `SET key value [EX seconds]` | Sets a key with a string value (optional expiration) |
-| `GET key`                    | Retrieves the value associated with a key            |
-| `DEL key...`                 | Deletes one or more keys                             |
-| `EXISTS key...`              | Checks if one or more keys exist                     |
-| `KEYS`                       | Returns all current keys                             |
-| `FLUSHALL`                   | Removes all keys from the database                   |
-| `EXPIRE key seconds`         | Sets an expiration time for a key in seconds         |
-| `TTL key`                    | Returns the time to live for a key in seconds        |
+| Command                                 | Description                                                                   |
+|-----------------------------------------|-------------------------------------------------------------------------------|
+| `SET key value [EX seconds] [NX \| XX]` | Sets a key with a string value (optional expiration and existence conditions) |
+| `GET key`                               | Retrieves the value associated with a key                                     |
+| `DEL key...`                            | Deletes one or more keys                                                      |
+| `EXISTS key...`                         | Checks if one or more keys exist                                              |
+| `KEYS`                                  | Returns all current keys                                                      |
+| `FLUSHALL`                              | Removes all keys from the database                                            |
+| `EXPIRE key seconds`                    | Sets an expiration time for a key in seconds                                  |
+| `TTL key`                               | Returns the time to live for a key in seconds                                 |
+
+### SET Command Options
+
+- **`EX seconds`**: Set expiration time in seconds
+- **`NX`**: Only set the key if it does not already exist
+- **`XX`**: Only set the key if it already exists
 
 ---
 
@@ -74,12 +80,31 @@ TTL session
 EXPIRE hello 30
 :1
 
+SET counter 1 NX
++OK
+
+SET counter 2 NX
+(nil)
+
+SET counter 3 XX
++OK
+
+SET newkey value XX
+(nil)
+
+SET tempkey temp EX 10 NX
++OK
+
 KEYS
-*2
+*4
 $5
 hello
 $7
 session
+$7
+counter
+$7
+tempkey
 ```
 
 ---
@@ -93,6 +118,7 @@ All components are covered by unit tests:
 - TCP handler
 - server startup (`StartServer`)
 - expiration functionality
+- existence conditions (NX/XX)
 
 ---
 

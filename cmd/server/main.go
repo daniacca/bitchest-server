@@ -72,14 +72,22 @@ func StartServer(config *Config) error {
 	defer ln.Close()
 
 	fmt.Printf("Bitchest is running on %s\n", config.Addr)
+	fmt.Printf("Waiting for connections...\n")
 
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Printf("Failed to accept: %v", err)
+			log.Printf("Failed to accept connection: %v", err)
 			continue
 		}
-		go handler.Handle(conn, store)
+		
+		clientAddr := conn.RemoteAddr().String()
+		log.Printf("New client connected: %s", clientAddr)
+		
+		go func() {
+			handler.Handle(conn, store)
+			log.Printf("Client disconnected: %s", clientAddr)
+		}()
 	}
 }
 

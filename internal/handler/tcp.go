@@ -2,10 +2,11 @@ package handler
 
 import (
 	"bufio"
-	"fmt"
 	"io"
+	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/daniacca/bitchest/internal/commands"
 	"github.com/daniacca/bitchest/internal/db"
@@ -15,14 +16,16 @@ import (
 func Handle(conn net.Conn, store *db.InMemoryDB) {
 	defer conn.Close()
 
+	clientAddr := conn.RemoteAddr().String()
 	reader := bufio.NewReader(conn)
+	
 	for {
 		raw, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
-				fmt.Printf("Client %s disconnected\n", conn.RemoteAddr())
+				log.Printf("[%s] Client disconnected", clientAddr)
 			} else {
-				fmt.Printf("Read error: %v\n", err)
+				log.Printf("[%s] Read error: %v", clientAddr, err)
 			}
 			return
 		}
@@ -32,22 +35,36 @@ func Handle(conn net.Conn, store *db.InMemoryDB) {
 			continue
 		}
 
+		// Log incoming command
+		log.Printf("[%s] Received command: %s", clientAddr, input)
+
 		parts := strings.Fields(input)
 		cmdName := strings.ToUpper(parts[0])
 		args := parts[1:]
 
+		// Start timing the command execution
+		startTime := time.Now()
+
 		cmd, found := commands.ExtractCommand(cmdName)
 		if !found {
-			conn.Write([]byte(protocol.Error("unknown command '" + cmdName + "'")))
+			errorMsg := "unknown command '" + cmdName + "'"
+			log.Printf("[%s] Command error: %s", clientAddr, errorMsg)
+			conn.Write([]byte(protocol.Error(errorMsg)))
 			continue
 		}
 
 		output, err := cmd.Execute(args, store)
+		executionTime := time.Since(startTime)
+
 		if err != nil {
+			log.Printf("[%s] Command '%s' failed after %v: %v", clientAddr, cmdName, executionTime, err)
 			conn.Write([]byte(protocol.Error(err.Error())))
 			continue
 		}
 
+		// Log successful command execution
+		log.Printf("[%s] Command '%s' completed successfully in %v", clientAddr, cmdName, executionTime)
+		
 		conn.Write([]byte(output))
 	}
 }

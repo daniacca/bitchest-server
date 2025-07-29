@@ -7,13 +7,10 @@
 It supports plain-text TCP connections and a minimal set of commands for managing string values. The project is modular, testable, and easy to extend.
 
 **Features:**
-- ✅ Full RESP protocol compliance
-- ✅ Proper null response handling (`$-1\r\n`)
 - ✅ Built-in CLI client
+- ✅ SET and GET strings data type
 - ✅ Expiration support with TTL
-- ✅ Conditional operations (NX/XX)
-- ✅ Comprehensive test coverage
-- ✅ Configurable server settings
+- ✅ Configurable server settings (host and port)
 
 ---
 
@@ -127,6 +124,21 @@ make docker-run
 ```
 
 The server will be available at `localhost:7463`.
+
+**Note**: The Docker container automatically binds to `0.0.0.0:7463` to allow external access from the host and other containers.
+
+### Custom Docker Run
+
+```bash
+# Run with custom port mapping
+docker run --rm -p 6379:7463 bitchest:latest
+
+# Run with custom host and port
+docker run --rm -p 0.0.0.0:6379:7463 bitchest:latest
+
+# Run in background
+docker run -d --name bitchest-server -p 7463:7463 bitchest:latest
+```
 
 ---
 

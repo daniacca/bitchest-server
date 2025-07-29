@@ -106,7 +106,7 @@ func (c *SetCommand) Execute(args []string, store *db.InMemoryDB) (string, error
 	}
 	
 	if stringVal == nil {
-		return "", nil
+		return protocol.NullBulk(), nil
 	}
 
 	store.Set(key, stringVal)

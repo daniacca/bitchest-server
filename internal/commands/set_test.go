@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/daniacca/bitchest/internal/db"
+	"github.com/daniacca/bitchest/internal/protocol"
 )
 
 func TestSetCommand_Valid(t *testing.T) {
@@ -94,8 +95,8 @@ func TestSetCommand_WithNX_Failure(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	if out != "" {
-		t.Errorf("Expected empty response for NX failure, got %q", out)
+	if out != protocol.NullBulk() {
+		t.Errorf("Expected null bulk response for NX failure, got %q", out)
 	}
 
 	// Check that original value is unchanged
@@ -142,8 +143,8 @@ func TestSetCommand_WithXX_Failure(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	if out != "" {
-		t.Errorf("Expected empty response for XX failure, got %q", out)
+	if out != protocol.NullBulk() {
+		t.Errorf("Expected null bulk response for XX failure, got %q", out)
 	}
 
 	// Check that key was not set

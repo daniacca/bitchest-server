@@ -12,8 +12,28 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
 # Go workspace file
 go.work
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output
+out/
+
+# Coverage files
+coverage.out
+coverage.html
 
 ### Godot ###
 .godot/
@@ -26,5 +46,3 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
-
-out/

@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+        cache: true
+        
+    - name: Get version from tag
+      id: get_version
+      run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Build for multiple platforms
+      run: |
+        # Build server for multiple platforms
+        GOOS=linux GOARCH=amd64 go build -o bitchest-server-linux-amd64 ./cmd/server/main.go
+        GOOS=linux GOARCH=arm64 go build -o bitchest-server-linux-arm64 ./cmd/server/main.go
+        GOOS=darwin GOARCH=amd64 go build -o bitchest-server-darwin-amd64 ./cmd/server/main.go
+        GOOS=darwin GOARCH=arm64 go build -o bitchest-server-darwin-arm64 ./cmd/server/main.go
+        GOOS=windows GOARCH=amd64 go build -o bitchest-server-windows-amd64.exe ./cmd/server/main.go
+        
+        # Build CLI for multiple platforms
+        GOOS=linux GOARCH=amd64 go build -o bitchest-cli-linux-amd64 ./cmd/cli/main.go
+        GOOS=linux GOARCH=arm64 go build -o bitchest-cli-linux-arm64 ./cmd/cli/main.go
+        GOOS=darwin GOARCH=amd64 go build -o bitchest-cli-darwin-amd64 ./cmd/cli/main.go
+        GOOS=darwin GOARCH=arm64 go build -o bitchest-cli-darwin-arm64 ./cmd/cli/main.go
+        GOOS=windows GOARCH=amd64 go build -o bitchest-cli-windows-amd64.exe ./cmd/cli/main.go
+        
+    - name: Create release assets
+      run: |
+        mkdir -p release
+        mv bitchest-server-* release/
+        mv bitchest-cli-* release/
+        
+        # Create checksums
+        cd release
+        sha256sum * > checksums.txt
+        
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release/bitchest-server-linux-amd64
+        asset_name: bitchest-server-linux-amd64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload CLI assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release/bitchest-cli-linux-amd64
+        asset_name: bitchest-cli-linux-amd64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload checksums
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release/checksums.txt
+        asset_name: checksums.txt
+        asset_content_type: text/plain 

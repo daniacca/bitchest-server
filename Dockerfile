@@ -1,13 +1,13 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY go.mod ./
 RUN go mod download
 
 COPY . .
 RUN go build -o bitchest ./cmd/server/main.go
 
-# Stage finale minimale
+# Final minimal stage
 FROM alpine:latest
 
 WORKDIR /app
@@ -15,4 +15,4 @@ COPY --from=builder /app/bitchest .
 
 EXPOSE 7463
 
-CMD ["./bitchest"]
+CMD ["./bitchest", "-host", "0.0.0.0"]

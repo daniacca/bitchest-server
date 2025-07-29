@@ -58,7 +58,7 @@ docker-build:
 	docker build -t $(APP_NAME):latest .
 
 # Run Docker container
-docker-run:
+docker-run: docker-build
 	docker run --rm -p 7463:7463 $(APP_NAME):latest
 
 # Show server help

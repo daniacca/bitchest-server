@@ -13,6 +13,7 @@ It supports plain-text TCP connections and a minimal set of commands for managin
 - ✅ Expiration support with TTL
 - ✅ Conditional operations (NX/XX)
 - ✅ Comprehensive test coverage
+- ✅ Configurable server settings
 
 ---
 
@@ -40,12 +41,46 @@ It supports plain-text TCP connections and a minimal set of commands for managin
 ## 💻 Local Development
 
 ```bash
-make            # Starts the server locally on port 7463
-make build      # Builds the server binary
-make build-cli  # Builds the CLI client
-make build-all  # Builds both server and CLI
-make test       # Runs all unit tests
+make               # Starts the server locally on port 7463
+make run-port      # Starts the server on port 6379
+make run-host      # Starts the server on all interfaces (0.0.0.0)
+make run-host-port # Starts the server on all interfaces:6379
+make build         # Builds the server binary
+make build-cli     # Builds the CLI client
+make build-all     # Builds both server and CLI
+make test          # Runs all unit tests
+make help          # Shows server command-line options
 ```
+
+---
+
+## ⚙️ Server Configuration
+
+The Bitchest server supports command-line configuration:
+
+```bash
+# Default configuration (localhost:7463)
+./out/bitchest
+
+# Custom port
+./out/bitchest -port 6379
+
+# Bind to all interfaces
+./out/bitchest -host 0.0.0.0
+
+# Custom host and port
+./out/bitchest -host 0.0.0.0 -port 6379
+
+# Show help
+./out/bitchest -h
+```
+
+### Configuration Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-host` | `localhost` | Host to bind the server to |
+| `-port` | `7463` | Port to bind the server to |
 
 ---
 
@@ -61,7 +96,7 @@ make build-cli
 ./out/bitchest-cli
 
 # Connect to custom host and port
-./out/bitchest-cli localhost 7463
+./out/bitchest-cli localhost 6379
 ```
 
 ### CLI Features

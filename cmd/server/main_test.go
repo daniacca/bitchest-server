@@ -9,7 +9,7 @@ import (
 )
 
 func TestStartServer(t *testing.T) {
-	// Usa porta dinamica (":0" -> qualunque disponibile)
+	// Use dynamic port (":0" -> any available)
 	ln, err := net.Listen("tcp", ":0")
 	if err != nil {
 		t.Fatalf("Failed to listen on dynamic port: %v", err)
@@ -17,11 +17,28 @@ func TestStartServer(t *testing.T) {
 	addr := ln.Addr().String()
 	ln.Close()
 
+	// Parse the address to get host and port
+	host, portStr, err := net.SplitHostPort(addr)
+	if err != nil {
+		t.Fatalf("Failed to split address: %v", err)
+	}
+
+	port, err := net.LookupPort("tcp", portStr)
+	if err != nil {
+		t.Fatalf("Failed to lookup port: %v", err)
+	}
+
+	config := &Config{
+		Host: host,
+		Port: port,
+		Addr: addr,
+	}
+
 	go func() {
-		_ = StartServer(addr) // Ignora l'errore (esce solo in test)
+		_ = StartServer(config) // Ignore error (exits only in test)
 	}()
 
-	// Attendi che il server sia partito
+	// Wait for server to start
 	time.Sleep(200 * time.Millisecond)
 
 	conn, err := net.Dial("tcp", addr)

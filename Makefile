@@ -12,6 +12,17 @@ run:
 build:
 	go build -o ./out/$(APP_NAME) cmd/server/main.go
 
+# Compile and run the CLI client
+run-cli:
+	go run cmd/cli/main.go
+
+# Compile the CLI client
+build-cli:
+	go build -o ./out/$(APP_NAME)-cli cmd/cli/main.go
+
+# Build both server and CLI
+build-all: build build-cli
+
 # Run tests
 test:
 	go test ./...
@@ -23,6 +34,8 @@ fmt:
 # Clean binaries or temporary builds
 clean:
 	rm -f $(APP_NAME)
+	rm -f ./out/$(APP_NAME)
+	rm -f ./out/$(APP_NAME)-cli
 
 # Create Docker image
 docker-build:

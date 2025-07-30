@@ -11,15 +11,16 @@ type Command interface {
 	Execute(args []string, db *db.InMemoryDB) (string, error)
 }
 
-// Registry maps the command names (e.g. "SET") to their respective handlers
-var Registry = map[string]Command{}
+// CommandsRegistry maps the command names (e.g. "SET") to their respective handlers
+var CommandsRegistry = map[string]Command{}
 
 // RegisterCommand registers a new command
 func RegisterCommand(name string, cmd Command) {
-	Registry[strings.ToUpper(name)] = cmd
+	CommandsRegistry[strings.ToUpper(name)] = cmd
 }
 
+// ExtractCommand search and return the command handler for the given name
 func ExtractCommand(name string) (Command, bool) {
-	cmd, ok := Registry[strings.ToUpper(name)]
+	cmd, ok := CommandsRegistry[strings.ToUpper(name)]
 	return cmd, ok
 }

@@ -63,6 +63,26 @@ make test          # Runs all unit tests
 make help          # Shows server command-line options
 ```
 
+### Git Hooks (Lefthook)
+
+The project uses **Lefthook** for git hooks to enforce code quality:
+
+```bash
+# Install lefthook hooks
+npm run prepare
+
+# Run lefthook manually
+npm run lefthook
+
+# Check commit message format
+npm run commitlint:check
+```
+
+**Hooks include:**
+- **commit-msg**: Validates conventional commit format
+- **pre-commit**: Runs `go fmt`, `go vet`, and tests on staged Go files
+- **pre-push**: Runs full test suite and build verification
+
 ---
 
 ## ⚙️ Server Configuration

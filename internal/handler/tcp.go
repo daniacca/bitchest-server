@@ -48,8 +48,8 @@ func Handle(conn net.Conn, store *db.InMemoryDB) {
 		cmd, found := commands.ExtractCommand(cmdName)
 		if !found {
 			errorMsg := "unknown command '" + cmdName + "'"
-			log.Printf("[%s] Command error: %s", clientAddr, errorMsg)
 			conn.Write([]byte(protocol.Error(errorMsg)))
+			log.Printf("[%s] Command error: %s", clientAddr, errorMsg)
 			continue
 		}
 
@@ -57,14 +57,12 @@ func Handle(conn net.Conn, store *db.InMemoryDB) {
 		executionTime := time.Since(startTime)
 
 		if err != nil {
-			log.Printf("[%s] Command '%s' failed after %v: %v", clientAddr, cmdName, executionTime, err)
 			conn.Write([]byte(protocol.Error(err.Error())))
+			log.Printf("[%s] Command '%s' failed after %v: %v", clientAddr, cmdName, executionTime, err)
 			continue
 		}
 
-		// Log successful command execution
-		log.Printf("[%s] Command '%s' completed successfully in %v", clientAddr, cmdName, executionTime)
-		
 		conn.Write([]byte(output))
+		log.Printf("[%s] Command '%s' completed successfully in %v", clientAddr, cmdName, executionTime)
 	}
 }

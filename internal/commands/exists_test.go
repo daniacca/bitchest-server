@@ -20,3 +20,15 @@ func TestExistsCommand(t *testing.T) {
 		t.Errorf("Expected 1 key to exist, got %q", out)
 	}
 }
+
+func TestExistsCommandWithNoInput(t *testing.T) {
+	store := db.NewDB()
+	cmd := &ExistsCommand{}
+	out, err := cmd.Execute([]string{}, store)
+	if err == nil {
+		t.Errorf("Expected error, got %q", out)
+	}
+	if out != "" {
+		t.Errorf("Expected empty response, got %q", out)
+	}
+}

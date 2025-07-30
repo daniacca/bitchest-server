@@ -65,27 +65,27 @@ func parseFlags() *Config {
 func StartServer(config *Config) error {
 	store := db.NewDB()
 
-	ln, err := net.Listen("tcp", config.Addr)
+	listener, err := net.Listen("tcp", config.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to bind on %s: %w", config.Addr, err)
 	}
-	defer ln.Close()
+	defer listener.Close()
 
-	fmt.Printf("Bitchest is running on %s\n", config.Addr)
-	fmt.Printf("Waiting for connections...\n")
+	log.Printf("Bitchest is running on %s\n", config.Addr)
+	log.Printf("Waiting for connections...\n")
 
 	for {
-		conn, err := ln.Accept()
+		connection, err := listener.Accept()
 		if err != nil {
 			log.Printf("Failed to accept connection: %v", err)
 			continue
 		}
 		
-		clientAddr := conn.RemoteAddr().String()
+		clientAddr := connection.RemoteAddr().String()
 		log.Printf("New client connected: %s", clientAddr)
 		
 		go func() {
-			handler.Handle(conn, store)
+			handler.Handle(connection, store)
 			log.Printf("Client disconnected: %s", clientAddr)
 		}()
 	}

@@ -22,11 +22,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Run npm clean install for local dependencies
         run: npm ci
+
+      - name: Install semantic-release globally
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
 
       - name: Run semantic-release
         env:

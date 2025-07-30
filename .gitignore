@@ -35,6 +35,12 @@ out/
 coverage.out
 coverage.html
 
+# Node.js (for commitlint and semantic-release)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 ### Godot ###
 .godot/
 .import/

@@ -8,9 +8,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "commitlint": "commitlint --edit",
-    "commitlint:check": "commitlint --from HEAD~1 --to HEAD --verbose"
+    "commitlint:check": "commitlint --from HEAD~1 --to HEAD --verbose",
+    "lefthook": "lefthook"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,6 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "husky": "^9.1.7"
+    "lefthook": "^1.12.2"
   }
 }

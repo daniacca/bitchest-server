@@ -1,0 +1,38 @@
+# Lefthook configuration for Bitchest
+# https://github.com/evilmartians/lefthook
+
+# Commit message validation
+commit-msg:
+  parallel: false
+  commands:
+    commitlint:
+      glob: "*.{js,ts,go}"
+      run: npx --no -- commitlint --edit {1}
+      stage_fixed: true
+
+# Optional: Add pre-commit hooks for Go
+pre-commit:
+  parallel: true
+  commands:
+    go-fmt:
+      glob: "*.go"
+      run: go fmt {staged_files}
+      stage_fixed: true
+    
+    go-vet:
+      glob: "*.go"
+      run: go vet {staged_files}
+    
+    go-test:
+      glob: "*.go"
+      run: go test ./...
+
+# Optional: Add pre-push hooks
+pre-push:
+  parallel: true
+  commands:
+    go-test:
+      run: go test ./...
+    
+    go-build:
+      run: go build ./cmd/server

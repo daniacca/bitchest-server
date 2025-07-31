@@ -17,7 +17,7 @@ jobs:
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
       id-token: write # to enable use of OIDC for npm provenance
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,8 +37,20 @@ jobs:
       - name: Install semantic-release globally
         run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
 
+      - name: Generate token from GitHub App
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.SEMANTIC_RELEASE_APP_ID }}
+          private_key: ${{ secrets.SEMANTIC_RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Setup Git user
+        run: |
+          git config user.name "semantic-release[bot]"
+          git config user.email "semantic-release[bot]@users.noreply.github.com"
+
       - name: Run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
           NODE_ENV: production
         run: npx semantic-release

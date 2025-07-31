@@ -22,6 +22,10 @@ module.exports = {
     'subject-case': [2, 'always', 'lower-case'],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
-    'header-max-length': [2, 'always', 72]
-  }
+    'header-max-length': [2, 'always', 72],
+    'body-max-line-length': [2, 'always', 250]
+  },
+  ignores: [
+    (message) => message.includes('[skip ci]')
+  ],
 }; 

@@ -14,6 +14,70 @@ const (
 	defaultPort = "7463"
 )
 
+func readArrayElement(reader *bufio.Reader) (string, error) {
+    // Read the element type line
+    elementTypeLine, err := reader.ReadString('\n')
+    if err != nil {
+        return "", err
+    }
+    elementTypeLine = strings.TrimSpace(elementTypeLine)
+    
+    // Handle different element types within the array
+    switch {
+    case strings.HasPrefix(elementTypeLine, "$"): // Bulk string
+        if elementTypeLine == "$-1" {
+            return "(nil)", nil
+        }
+        
+        // Read the actual string content
+        content, err := reader.ReadString('\n')
+        if err != nil {
+            return "", err
+        }
+        return strings.TrimSpace(content), nil
+        
+    case strings.HasPrefix(elementTypeLine, ":"): // Integer
+        return elementTypeLine, nil
+        
+    case strings.HasPrefix(elementTypeLine, "+"): // Simple string
+        return elementTypeLine, nil
+        
+    case strings.HasPrefix(elementTypeLine, "-"): // Error
+        return elementTypeLine, nil
+        
+    default:
+        return elementTypeLine, nil
+    }
+}
+
+func formatArrayOutput(elements []string) string {
+    if len(elements) == 0 {
+        return "(empty list or set)"
+    }
+    
+    // For MEMORY STATS, format as key-value pairs
+    if len(elements) > 0 && strings.Contains(elements[0], "=") {
+        var result strings.Builder
+        for i, element := range elements {
+            if i > 0 {
+                result.WriteString("\n")
+            }
+            result.WriteString(element)
+        }
+        return result.String()
+    }
+    
+    // For other arrays, format as numbered list
+    var result strings.Builder
+    for i, element := range elements {
+        if i > 0 {
+            result.WriteString("\n")
+        }
+        result.WriteString(fmt.Sprintf("%d) %s", i+1, element))
+    }
+    return result.String()
+}
+
 func main() {
 	host := defaultHost
 	port := defaultPort
@@ -136,9 +200,25 @@ func readSimpleResponse(conn net.Conn) (string, error) {
 			return "(empty list or set)", nil // Display empty array like Redis
 		}
 		
-		// For arrays, just return the first line for now
-		// In a full implementation, you'd parse the array length and read all elements
-		return firstLine, nil
+		// Parse array length
+		arrayLength := 0
+		_, err := fmt.Sscanf(firstLine, "*%d", &arrayLength)
+		if err != nil {
+			return "", fmt.Errorf("invalid array format: %v", err)
+		}
+		
+		// Read all array elements
+		var elements []string
+		for i := 0; i < arrayLength; i++ {
+			element, err := readArrayElement(reader)
+			if err != nil {
+				return "", fmt.Errorf("error reading array element %d: %v", i+1, err)
+			}
+			elements = append(elements, element)
+		}
+		
+		// Format the array output nicely
+		return formatArrayOutput(elements), nil
 		
 	default:
 		return firstLine, nil

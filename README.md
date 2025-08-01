@@ -46,6 +46,7 @@ It supports plain-text TCP connections and a minimal set of commands for managin
 | `FLUSHALL`                            | Removes all keys from the database                                            |
 | `EXPIRE key seconds`                  | Sets an expiration time for a key in seconds                                  |
 | `TTL key`                             | Returns the time to live for a key in seconds                                 |
+| `MEMORY STATS`                        | Returns the memory stats for the current server                               |
 
 ### SET Command Options
 

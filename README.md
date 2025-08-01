@@ -1,7 +1,7 @@
 # Bitchest
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![CI](https://github.com/daniacca/bitchest/actions/workflows/release.yml/badge.svg)
+![CI](https://github.com/daniacca/bitchest-server/actions/workflows/release.yml/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/kaelisra/bitchest)
 ![Coverage](https://img.shields.io/badge/coverage-62.9%25-brightgreen)
 

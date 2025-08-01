@@ -13,6 +13,7 @@ const (
 type Value interface {
 	Type() ValueType
 	IsExpired() bool
+	Size() int
 }
 
 type StringValue struct {
@@ -35,6 +36,10 @@ func (s *StringValue) IsExpired() bool {
 	return time.Now().After(*s.ExpireAt)
 }
 
+func (s *StringValue) Size() int {
+	return len(s.Val) + 8 // 8 bytes for the expiration time
+}
+
 // TODO: implement
 type ListValue struct {
 	Items []string
@@ -48,6 +53,10 @@ func (l *ListValue) IsExpired() bool {
 	return false // TODO: implement expiration for lists
 }
 
+func (l *ListValue) Size() int {
+	return 0 // TODO: implement size for lists
+}
+
 type SortedSetValue struct {
 	// TODO: implement
 }
@@ -58,4 +67,8 @@ func (z *SortedSetValue) Type() ValueType {
 
 func (z *SortedSetValue) IsExpired() bool {
 	return false // TODO: implement expiration for sorted sets
+}
+
+func (z *SortedSetValue) Size() int {
+	return 0 // TODO: implement size for sorted sets
 }

@@ -5,21 +5,48 @@ import (
 	"time"
 )
 
+type Stats struct {
+	Keys int // Number of keys in the database
+	MemoryUsage int // Memory usage in bytes - total size of all values in the database
+	MemoryPerKey int // Memory usage per key - average size of all values in the database
+	PeakMemoryUsage int // Peak memory usage in bytes - maximum memory usage in the database
+	NumberOfExpiredKeys int // Number of expired keys in the database
+	DataSize int // Number of entries in the database
+}
+
 type InMemoryDB struct {
 	data map[string]Value
 	mu   sync.RWMutex
+	stats Stats
 }
 
 func NewDB() *InMemoryDB {
 	return &InMemoryDB{
 		data: make(map[string]Value),
+		stats: Stats{
+			Keys: 0,
+			MemoryUsage: 0,
+			MemoryPerKey: 0,
+			PeakMemoryUsage: 0,
+			NumberOfExpiredKeys: 0,
+			DataSize: 0,
+		},
 	}
 }
 
 func (db *InMemoryDB) Set(key string, val Value) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
+
+	// Add the key to the database
 	db.data[key] = val
+
+	// Update stats
+	db.stats.Keys++
+	db.stats.DataSize++
+	db.stats.MemoryUsage += val.Size()
+	db.stats.MemoryPerKey = db.stats.MemoryUsage / db.stats.DataSize
+	db.stats.PeakMemoryUsage = max(db.stats.PeakMemoryUsage, db.stats.MemoryUsage)
 }
 
 func (db *InMemoryDB) Get(key string) (Value, bool) {
@@ -35,6 +62,7 @@ func (db *InMemoryDB) Get(key string) (Value, bool) {
 		db.mu.RUnlock()
 		db.mu.Lock()
 		delete(db.data, key)
+		db.stats.NumberOfExpiredKeys++
 		db.mu.Unlock()
 		db.mu.RLock() // Re-acquire read lock, since we're in a defer
 		return nil, false
@@ -59,7 +87,21 @@ func (db *InMemoryDB) Delete(key string) bool {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	if _, exists := db.data[key]; exists {
+		// Get the size of the key
+		removedSize := db.data[key].Size()
+
+		// Remove the key from the database
 		delete(db.data, key)
+
+		// Update stats
+		db.stats.Keys--
+		db.stats.DataSize--
+		db.stats.MemoryUsage -= removedSize
+		if db.stats.DataSize > 0 {
+			db.stats.MemoryPerKey = db.stats.MemoryUsage / db.stats.DataSize
+		} else {
+			db.stats.MemoryPerKey = 0
+		}
 		return true
 	}
 	return false
@@ -68,7 +110,19 @@ func (db *InMemoryDB) Delete(key string) bool {
 func (db *InMemoryDB) FlushAll() {
 	db.mu.Lock()
 	defer db.mu.Unlock()
+
+	// Clear the database
 	db.data = make(map[string]Value)
+
+	// Reset stats
+	db.stats = Stats{
+		Keys: 0,
+		MemoryUsage: 0,
+		MemoryPerKey: 0,
+		PeakMemoryUsage: db.stats.PeakMemoryUsage,
+		NumberOfExpiredKeys: db.stats.NumberOfExpiredKeys,
+		DataSize: 0,
+	}
 }
 
 func (db *InMemoryDB) SetExpiration(key string, seconds int) bool {
@@ -114,7 +168,7 @@ func (db *InMemoryDB) GetTTL(key string) int {
 		if v.ExpireAt == nil {
 			return -1 // No expiration set
 		}
-		ttl := int(v.ExpireAt.Sub(time.Now()).Seconds())
+		ttl := int(time.Until(*v.ExpireAt).Seconds())
 		if ttl < 0 {
 			return -2 // Expired
 		}
@@ -138,4 +192,11 @@ func (db *InMemoryDB) CleanupExpired() int {
 	}
 	
 	return removed
+}
+
+// GetStats returns the current stats of the database
+func (db *InMemoryDB) GetStats() Stats {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+	return db.stats
 }

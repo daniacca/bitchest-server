@@ -56,3 +56,7 @@ func (m *mockValue) Type() db.ValueType {
 func (m *mockValue) IsExpired() bool {
 	return false
 }
+
+func (m *mockValue) Size() int {
+	return 0
+}

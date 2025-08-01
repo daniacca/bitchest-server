@@ -41,7 +41,7 @@ run-host-port:
 	go run cmd/server/main.go -host $(HOST) -port $(PORT)
 
 run-cli:
-	./out/bitchest-cli
+	go run cmd/cli/main.go
 
 # Docker targets
 docker-build:

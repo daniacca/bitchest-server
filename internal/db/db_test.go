@@ -156,3 +156,14 @@ func TestCleanupExpired(t *testing.T) {
 		t.Fatalf("Expected only 'valid' key to remain, got %v", keys)
 	}
 }
+
+func TestGetStats(t *testing.T) {
+	db := NewDB()
+
+	db.Set("foo", &StringValue{Val: "bar"})
+	stats := db.GetStats()
+
+	if stats.Keys != 1 {
+		t.Fatalf("Expected 1 key, got %d", stats.Keys)
+	}
+}

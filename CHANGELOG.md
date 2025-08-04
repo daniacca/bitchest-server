@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/daniacca/bitchest-server/compare/v1.0.0...v1.1.0) (2025-08-04)
+
+
+### Bug Fixes
+
+* fixed command input tokenizer with a custom algorithm to manage qouted data with space ([c835af1](https://github.com/daniacca/bitchest-server/commit/c835af1ed2207ce660cf80c825d361eb786dd217))
+* fixed command input tokenizer with a custom algorithm to manage qouted data with space ([#4](https://github.com/daniacca/bitchest-server/issues/4)) ([6cb35e1](https://github.com/daniacca/bitchest-server/commit/6cb35e1db83b3e1ab612d6d8c0bacb96162d1b70))
+
+
+### Features
+
+* **commands:** added MEMORY STATS command ([#3](https://github.com/daniacca/bitchest-server/issues/3)) ([9c2d297](https://github.com/daniacca/bitchest-server/commit/9c2d297cf705d10a5a87e0ede0c59b1b20184006))
+
 # 1.0.0 (2025-07-31)
 
 

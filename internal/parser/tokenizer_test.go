@@ -177,4 +177,28 @@ func TestParseCommandEdgeCases(t *testing.T) {
 			t.Errorf("parseCommand(%q) = %v, want %v", input, result, expected)
 		}
 	})
+
+	t.Run("set command with json input and escaped quotes inside the json", func(t *testing.T) {
+		input := `SET key '{"key": "value with \"quotes\""}' EX 60`
+		result, err := Tokenize(input)
+		if err != nil {
+			t.Errorf("parseCommand(%q) = %v, want nil", input, err)
+		}
+		expected := []string{"SET", "key", `{"key": "value with "quotes""}`, "EX", "60"}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("parseCommand(%q) = %v, want %v", input, result, expected)
+		}
+	})
+
+	t.Run("set command with complex json input", func(t *testing.T) {
+		input := `SET key '{"key": "value with \"quotes\"", "key2": 14, "key3": {"key4": "value4"}, "key5": [1, 2, 3] }'`
+		result, err := Tokenize(input)
+		if err != nil {
+			t.Errorf("parseCommand(%q) = %v, want nil", input, err)
+		}
+		expected := []string{"SET", "key", `{"key": "value with "quotes"", "key2": 14, "key3": {"key4": "value4"}, "key5": [1, 2, 3] }`}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("parseCommand(%q) = %v, want %v", input, result, expected)
+		}
+	})
 }

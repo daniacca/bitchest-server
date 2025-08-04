@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![CI](https://github.com/daniacca/bitchest-server/actions/workflows/release.yml/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/kaelisra/bitchest)
-![Coverage](https://img.shields.io/badge/coverage-62.0%25-green)
+![Coverage](https://img.shields.io/badge/coverage-64.8%25-green)
 
 <img src="doc/img/bitchest_logo.png" alt="Bitchest Logo" width="200">
 
@@ -261,7 +261,7 @@ Bitchest maintains comprehensive test coverage to ensure code quality and reliab
 
 ### Current Coverage Status
 
-**Overall Coverage: 62.0%**
+**Overall Coverage: 64.8%**
 
 | Package             | Coverage | Status               |
 | ------------------- | -------- | -------------------- |

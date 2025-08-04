@@ -10,6 +10,7 @@ import (
 
 	"github.com/daniacca/bitchest/internal/commands"
 	"github.com/daniacca/bitchest/internal/db"
+	"github.com/daniacca/bitchest/internal/parser"
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
@@ -38,7 +39,18 @@ func Handle(conn net.Conn, store *db.InMemoryDB) {
 		// Log incoming command
 		log.Printf("[%s] Received command: %s", clientAddr, input)
 
-		parts := strings.Fields(input)
+		// Tokenize the input
+		parts, err := parser.Tokenize(input)
+		if err != nil {
+			conn.Write([]byte(protocol.Error(err.Error())))
+			log.Printf("[%s] Command error: %s", clientAddr, err)
+			continue
+		}
+
+		if len(parts) == 0 {
+			continue
+		}
+		
 		cmdName := strings.ToUpper(parts[0])
 		args := parts[1:]
 

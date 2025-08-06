@@ -1,8 +1,17 @@
 package db
 
+import "errors"
+
 type Queue struct {
 	items []string
 	length int
+}
+
+func NewQueue() *Queue {
+	return &Queue{
+		items: []string{},
+		length: 0,
+	}
 }
 
 // Push adds an item to the end of the queue
@@ -12,19 +21,25 @@ func (q *Queue) Push(item string) {
 }
 
 // Pop removes and returns the last item of the queue
-func (q *Queue) Pop() string {
+func (q *Queue) Pop() (string, error) {
+	if q.length == 0 {
+		return "", errors.New("queue is empty")
+	}
 	item := q.items[q.length-1]
 	q.items = q.items[:q.length-1]
 	q.length--
-	return item
+	return item, nil
 }
 
 // Shift removes and returns the first item of the queue
-func (q *Queue) Shift() string {
+func (q *Queue) Shift() (string, error) {
+	if q.length == 0 {
+		return "", errors.New("queue is empty")
+	}
 	item := q.items[0]
 	q.items = q.items[1:]
 	q.length--
-	return item
+	return item, nil
 }
 
 // Unshift adds an item to the beginning of the queue

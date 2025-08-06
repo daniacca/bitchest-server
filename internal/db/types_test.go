@@ -45,7 +45,10 @@ func TestStringValue_Type(t *testing.T) {
 
 func TestListValue_Type(t *testing.T) {
 	value := &ListValue{
-		Items: []string{"test"},
+		Items: Queue{
+			items: []string{"test"},
+			length: 1,
+		},
 	}
 
 	if value.Type() != ListType {
@@ -55,7 +58,10 @@ func TestListValue_Type(t *testing.T) {
 
 func TestListValue_IsExpired(t *testing.T) {
 	value := &ListValue{
-		Items: []string{"test"},
+		Items: Queue{
+			items: []string{"test"},
+			length: 1,	
+		},
 	}
 
 	if value.IsExpired() {

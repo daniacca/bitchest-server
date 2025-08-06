@@ -54,3 +54,7 @@ func (c *LPushCommand) Execute(args []string, store *db.InMemoryDB) (string, err
 
 	return "", errors.New("wrong type for 'LPUSH'")
 }
+
+func init() {
+	RegisterCommand("LPUSH", &LPushCommand{})
+}

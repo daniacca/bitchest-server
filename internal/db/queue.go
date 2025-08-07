@@ -72,6 +72,17 @@ func (q Queue) Index(idx int) (string, error) {
     if idx < 0 || idx >= n {
         return "", errors.New("index out of range")
     }
-	
+
     return q.items[idx], nil
+}
+
+// Set sets the item at the given index 
+func (q *Queue) Set(idx int, value string) error {
+    n := q.GetLength()
+    if idx < 0 || idx >= n {
+        return errors.New("index out of range")
+    }
+
+    q.items[idx] = value
+    return nil
 }

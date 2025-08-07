@@ -40,9 +40,9 @@ func (s *StringValue) Size() int {
 	return len(s.Val) + 8 // 8 bytes for the expiration time
 }
 
-// TODO: implement
 type ListValue struct {
-	Items []string
+	Items Queue
+	ExpireAt *time.Time // nil means no expiration
 }
 
 func (l *ListValue) Type() ValueType {
@@ -50,11 +50,14 @@ func (l *ListValue) Type() ValueType {
 }
 
 func (l *ListValue) IsExpired() bool {
-	return false // TODO: implement expiration for lists
+	if l.ExpireAt == nil {
+        return false
+    }
+    return time.Now().After(*l.ExpireAt)
 }
 
 func (l *ListValue) Size() int {
-	return 0 // TODO: implement size for lists
+	return l.Items.GetSize() + 8 // 8 bytes for expiration time
 }
 
 type SortedSetValue struct {

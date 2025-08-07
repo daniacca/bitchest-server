@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![CI](https://github.com/daniacca/bitchest-server/actions/workflows/release.yml/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/kaelisra/bitchest)
-![Coverage](https://img.shields.io/badge/coverage-64.8%25-green)
+![Coverage](https://img.shields.io/badge/coverage-74.5%25-green)
 
 <img src="doc/img/bitchest_logo.png" alt="Bitchest Logo" width="200">
 
@@ -47,12 +47,31 @@ It supports plain-text TCP connections and a minimal set of commands for managin
 | `EXPIRE key seconds`                  | Sets an expiration time for a key in seconds                                  |
 | `TTL key`                             | Returns the time to live for a key in seconds                                 |
 | `MEMORY STATS`                        | Returns the memory stats for the current server                               |
+| `LPUSH key value [value ...]`         | Insert all the specified values at the head of the list stored at key         |
+| `RPUSH key value [value ...]`         | Insert all the specified values at the tail of the list stored at key         |
+| `LPOP key`                            | Removes and returns the first element of the list stored at key               |
+| `RPOP key`                            | Removes and returns the last element of the list stored at key                |
+| `LRANGE key start stop`               | Returns the specified elements of the list stored at key                      |
+| `LLEN key`                            | Returns the length of the list stored at key                                  |
+| `LREM key count value`                | Removes elements equal to value from the list stored at key                   |
 
 ### SET Command Options
 
 - **`EX seconds`**: Set expiration time in seconds
 - **`NX`**: Only set the key if it does not already exist
 - **`XX`**: Only set the key if it already exists
+
+---
+
+### LIST Command Details
+
+- **`LPUSH key value [value ...]`**: Insert one or more values at the head (left) of the list. Returns the new length of the list.
+- **`RPUSH key value [value ...]`**: Insert one or more values at the tail (right) of the list. Returns the new length of the list.
+- **`LPOP key`**: Remove and return the first element of the list. Returns NIL if the list does not exist or is empty.
+- **`RPOP key`**: Remove and return the last element of the list. Returns NIL if the list does not exist or is empty.
+- **`LRANGE key start stop`**: Get a range of elements from the list (inclusive, zero-based indexes). Negative indexes count from the end. Returns an empty array if the list does not exist.
+- **`LLEN key`**: Get the length of the list. Returns 0 if the list does not exist.
+- **`LREM key count value`**: Remove up to `count` occurrences of `value` from the list. If `count` > 0, remove from head to tail; if `count` < 0, remove from tail to head; if `count` = 0, remove all occurrences. Returns the number of removed elements.
 
 ---
 
@@ -239,12 +258,13 @@ All components are covered by unit tests:
 - existence conditions (NX/XX)
 - RESP protocol compliance
 
+For merging code to `main` branch, there is a check workflow that block merging if the total code coverage drops below `72%` threshold.
+
 ---
 
 ## 📦 Future Plans
 
-- Advanced types (`LIST`, `ZSET`)
-- Server status commands (i.e. `MEMORY STATS`)
+- Server status commands (i.e. `INFO`, `MONITOR`)
 - DB persistence (file, storage/bucket)
 - Cluster configuration
 - Scripting for advanced commands
@@ -261,16 +281,17 @@ Bitchest maintains comprehensive test coverage to ensure code quality and reliab
 
 ### Current Coverage Status
 
-**Overall Coverage: 64.8%**
+**Overall Coverage: 74.5%**
 
 | Package             | Coverage | Status               |
 | ------------------- | -------- | -------------------- |
 | `cmd/cli`           | 0.0%     | ❌ No coverage       |
-| `cmd/server`        | 35.0%    | ⚠️ Needs improvement |
-| `internal/commands` | 96.5%    | ✅ Excellent         |
-| `internal/db`       | 86.7%    | ✅ Good              |
-| `internal/handler`  | 84.4%    | ✅ Good              |
+| `cmd/server`        | 50.0%    | ⚠️ Needs improvement |
+| `internal/commands` | 98-100%  | ✅ Excellent         |
+| `internal/db`       | 99%      | ✅ Excellent         |
+| `internal/handler`  | 76.3%    | ⚠️ Needs improvement |
 | `internal/protocol` | 100.0%   | ✅ Perfect           |
+| `internal/parser`   | 100.0%   | ✅ Perfect           |
 
 ### Coverage Commands
 

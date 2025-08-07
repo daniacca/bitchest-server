@@ -8,7 +8,13 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
-// ExpireCommand sets an expiration time for a key
+// ExpireCommand implements the EXPIRE command
+// EXPIRE key seconds
+// Sets a key's expiration time in seconds.
+// Returns 1 if the expiration was set, otherwise returns 0.
+// If the key does not exist, it returns 0.
+// If the key has already expired, it returns 0.
+// If the key is a list, it returns an error.
 type ExpireCommand struct{}
 
 func (c *ExpireCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {

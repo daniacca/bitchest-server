@@ -7,6 +7,9 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
+// KeysCommand implements the KEYS command
+// KEYS
+// Returns all keys in the database.
 type KeysCommand struct{}
 
 func (c *KeysCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {

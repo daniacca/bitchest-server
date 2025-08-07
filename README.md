@@ -322,7 +322,7 @@ GitHub Actions automatically:
 - ✅ Generates HTML and function reports
 - ✅ Uploads coverage artifacts
 - ✅ Comments PRs with coverage summary
-- ✅ Enforces 60% coverage threshold
+- ✅ Enforces coverage threshold
 
 ---
 

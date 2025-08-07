@@ -163,4 +163,143 @@ func TestQueue(t *testing.T) {
 			t.Errorf("Expected item4, got %s", queue.GetItems()[1])
 		}
 	})
+
+	t.Run("Remove should remove all occurrences when count is 0", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("a")
+		queue.Push("b")
+		queue.Push("a")
+		queue.Push("c")
+		queue.Push("a")
+		removed := queue.Remove("a", 0)
+		if removed != 3 {
+			t.Errorf("Expected 3 items removed, got %d", removed)
+		}
+		expected := []string{"b", "c"}
+		got := queue.GetItems()
+		if len(got) != len(expected) {
+			t.Errorf("Expected queue length %d, got %d", len(expected), len(got))
+		}
+		for i, v := range expected {
+			if got[i] != v {
+				t.Errorf("Expected %s at index %d, got %s", v, i, got[i])
+			}
+		}
+	})
+
+	t.Run("Remove should remove up to count occurrences from head to tail when count > 0", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("a")
+		queue.Push("b")
+		queue.Push("a")
+		queue.Push("c")
+		queue.Push("a")
+		
+		removed := queue.Remove("a", 2)
+		if removed != 2 {
+			t.Errorf("Expected 2 items removed, got %d", removed)
+		}
+		
+		expected := []string{"b", "c", "a"}
+		got := queue.GetItems()
+		if len(got) != len(expected) {
+			t.Errorf("Expected queue length %d, got %d", len(expected), len(got))
+		}
+
+		for i, v := range expected {
+			if got[i] != v {
+				t.Errorf("Expected %s at index %d, got %s", v, i, got[i])
+			}
+		}
+	})
+
+	t.Run("Remove should remove up to count occurrences from tail to head when count < 0", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("a")
+		queue.Push("b")
+		queue.Push("a")
+		queue.Push("c")
+		queue.Push("a")
+		
+		removed := queue.Remove("a", -2)
+		if removed != 2 {
+			t.Errorf("Expected 2 items removed, got %d", removed)
+		}
+		
+		expected := []string{"a", "b", "c"}
+		got := queue.GetItems()
+		if len(got) != len(expected) {
+			t.Errorf("Expected queue length %d, got %d", len(expected), len(got))
+		}
+		
+		for i, v := range expected {
+			if got[i] != v {
+				t.Errorf("Expected %s at index %d, got %s", v, i, got[i])
+			}
+		}
+	})
+
+	t.Run("Remove should do nothing if value is not present", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("a")
+		queue.Push("b")
+		queue.Push("c")
+		
+		removed := queue.Remove("x", 0)
+		if removed != 0 {
+			t.Errorf("Expected 0 items removed, got %d", removed)
+		}
+		
+		expected := []string{"a", "b", "c"}
+		got := queue.GetItems()
+		
+		if len(got) != len(expected) {
+			t.Errorf("Expected queue length %d, got %d", len(expected), len(got))
+		}
+		
+		for i, v := range expected {
+			if got[i] != v {
+				t.Errorf("Expected %s at index %d, got %s", v, i, got[i])
+			}
+		}
+	})
+
+	t.Run("Remove should handle empty queue", func(t *testing.T) {
+		queue := NewQueue()
+		removed := queue.Remove("a", 0)
+		if removed != 0 {
+			t.Errorf("Expected 0 items removed, got %d", removed)
+		}
+		if queue.GetLength() != 0 {
+			t.Errorf("Expected queue length 0, got %d", queue.GetLength())
+		}
+	})
+
+	t.Run("Remove should remove all occurrence when count is 0", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("a")
+		queue.Push("b")
+		queue.Push("a")
+		queue.Push("c")
+		queue.Push("a")
+		queue.Push("d")
+		queue.Push("a")
+
+		removed := queue.Remove("a", 0)
+		if removed != 4 {
+			t.Errorf("Expected 4 items removed, got %d", removed)
+		}
+		
+		expected := []string{"b", "c", "d"}
+		got := queue.GetItems()
+		if len(got) != len(expected) {
+			t.Errorf("Expected queue length %d, got %d", len(expected), len(got))
+		}
+
+		for i, v := range expected {
+			if got[i] != v {
+				t.Errorf("Expected %s at index %d, got %s", v, i, got[i])
+			}
+		}
+	})
 }

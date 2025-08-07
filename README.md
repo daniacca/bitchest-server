@@ -258,8 +258,6 @@ All components are covered by unit tests:
 - existence conditions (NX/XX)
 - RESP protocol compliance
 
-For merging code to `main` branch, there is a check workflow that block merging if the total code coverage drops below `72%` threshold.
-
 ---
 
 ## 📦 Future Plans
@@ -314,7 +312,7 @@ make coverage-clean
 
 ### Coverage Threshold
 
-The project maintains a **60% minimum coverage threshold** enforced by CI/CD pipelines.
+The project maintains a **72% minimum coverage threshold** enforced by CI/CD pipelines.
 
 ### Coverage Workflow
 

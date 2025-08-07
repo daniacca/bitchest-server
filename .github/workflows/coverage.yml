@@ -11,55 +11,54 @@ jobs:
   coverage:
     name: Code Coverage Analysis
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24'
-        cache: true
-        
-    - name: Install dependencies
-      run: go mod download
-      
-    - name: Run tests with coverage
-      run: |
-        go test -v -coverprofile=coverage.out -covermode=atomic ./...
-        echo "Coverage report generated"
-        
-    - name: Generate coverage report
-      run: |
-        go tool cover -html=coverage.out -o coverage.html
-        echo "HTML coverage report generated"
-        
-    - name: Display coverage summary
-      run: |
-        echo "=== COVERAGE SUMMARY ==="
-        go tool cover -func=coverage.out
-        echo ""
-        echo "=== PACKAGE COVERAGE ==="
-        go test -cover ./...
-        
-    - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-reports
-        path: |
-          coverage.out
-          coverage.html
-        retention-days: 30
-        
-    - name: Check coverage threshold
-      run: |
-        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-        echo "Current coverage: ${COVERAGE}%"
-        if (( $(echo "$COVERAGE < 60" | bc -l) )); then
-          echo "❌ Coverage is below 60% threshold (${COVERAGE}%)"
-          exit 1
-        else
-          echo "✅ Coverage is above 60% threshold (${COVERAGE}%)"
-        fi
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        run: |
+          go test -v -coverprofile=coverage.out -covermode=atomic ./...
+          echo "Coverage report generated"
+
+      - name: Generate coverage report
+        run: |
+          go tool cover -html=coverage.out -o coverage.html
+          echo "HTML coverage report generated"
+
+      - name: Display coverage summary
+        run: |
+          echo "=== COVERAGE SUMMARY ==="
+          go tool cover -func=coverage.out
+          echo ""
+          echo "=== PACKAGE COVERAGE ==="
+          go test -cover ./...
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.out
+            coverage.html
+          retention-days: 30
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Current coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 72" | bc -l) )); then
+            echo "❌ Coverage is below 72% threshold (${COVERAGE}%)"
+            exit 1
+          else
+            echo "✅ Coverage is above 72% threshold (${COVERAGE}%)"
+          fi

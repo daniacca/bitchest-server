@@ -7,6 +7,11 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
+// GetCommand implements the GET command
+// GET key
+// Returns the value of the key.
+// If the key does not exist, it returns nil.
+// If the key value is not a string, it returns an error.
 type GetCommand struct{}
 
 func (c *GetCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {

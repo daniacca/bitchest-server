@@ -8,6 +8,16 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
+// MemoryStatsCommand implements the MEMORY STATS command
+// MEMORY STATS
+// Returns memory statistics for the database.
+// Returns a map with the following keys:
+// - keys: number of keys in the database
+// - memory_usage: total memory usage of the database
+// - memory_per_key: average memory usage per key
+// - peak_memory_usage: peak memory usage of the database
+// - number_of_expired_keys: number of expired keys
+// - data_size: total data size of the database
 type MemoryStatsCommand struct{}
 
 func (c *MemoryStatsCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {

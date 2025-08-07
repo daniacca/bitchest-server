@@ -7,6 +7,10 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
+// DelCommand implements the DEL command
+// DEL key [key ...]
+// Removes the specified keys. A key is ignored if it does not exist.
+// Returns the number of keys that were removed.
 type DelCommand struct{}
 
 func (c *DelCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {

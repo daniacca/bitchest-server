@@ -32,7 +32,7 @@ func TestTTLCommand(t *testing.T) {
 
 	// Set a key with expiration
 	store.SetExpiration("test", 10)
-	result, err = cmd.Execute([]string{"test"}, store)
+	_, err = cmd.Execute([]string{"test"}, store)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}

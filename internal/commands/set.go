@@ -9,7 +9,16 @@ import (
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
-// SetCommand sets a key to a string value with optional expiration and existence conditions
+// SetCommand implements the SET command
+// SET key value [EX seconds] [NX|XX]
+// Sets the value of a key.
+// The EX option sets an expiration time in seconds.
+// The NX option sets the key only if it does not exist.
+// The XX option sets the key only if it already exists.
+// If both NX and XX are provided, it returns an error.
+// If neither NX nor XX are provided, the key is always set.
+// If the key is not a string, it returns an error.
+// If the key is a list, it returns an error.
 type SetCommand struct{}
 
 type setOptions int

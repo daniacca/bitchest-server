@@ -66,3 +66,12 @@ func (q Queue) GetSize() int {
 	}
 	return sum
 }
+
+func (q Queue) Index(idx int) (string, error) {
+    n := q.GetLength()
+    if idx < 0 || idx >= n {
+        return "", errors.New("index out of range")
+    }
+	
+    return q.items[idx], nil
+}

@@ -105,4 +105,28 @@ func TestQueue(t *testing.T) {
 			t.Errorf("Expected item1, got %s", queue.GetItems()[1])
 		}
 	})
+
+	t.Run("Index should return an error if the index is out of range", func(t *testing.T) {
+		queue := NewQueue()
+		_, err := queue.Index(0)
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
+	})
+
+	t.Run("Index should return the correct item if the index is in range", func(t *testing.T) {
+		queue := NewQueue()
+		queue.Push("item1")
+		queue.Push("item2")
+		queue.Push("item3")
+
+		item, err := queue.Index(1)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+		if item != "item2" {
+			t.Errorf("Expected item2, got %s", item)
+		}
+	})
+
 }

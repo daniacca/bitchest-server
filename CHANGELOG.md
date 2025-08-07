@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/daniacca/bitchest-server/compare/v1.1.0...v1.2.0) (2025-08-07)
+
+
+### Features
+
+* **list:** Implementing List Data Type ([#5](https://github.com/daniacca/bitchest-server/issues/5)) ([2cdedce](https://github.com/daniacca/bitchest-server/commit/2cdedceb78bb8359dbd8936c68c3e3fe5208ad5d))
+
 # [1.1.0](https://github.com/daniacca/bitchest-server/compare/v1.0.0...v1.1.0) (2025-08-04)
 
 

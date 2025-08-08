@@ -15,9 +15,16 @@
 
 ## Related Issues
 
+<!--
+
+if there is a related issues for this PR, list them.
+For example:
+
 Closes #(issue number)
 Fixes #(issue number)
 Related to #(issue number)
+
+-->
 
 ## Implementation Details
 
@@ -33,22 +40,6 @@ Related to #(issue number)
 - [ ] Not applicable
 
 <!-- If there's a performance impact, please provide benchmarks or measurements. -->
-
-## Documentation
-
-### User Documentation
-
-- [ ] README.md updated
-- [ ] Command documentation updated
-- [ ] Usage examples added
-- [ ] No documentation changes needed
-
-### Developer Documentation
-
-- [ ] Code comments added/updated
-- [ ] API documentation updated
-- [ ] Implementation notes added
-- [ ] No developer documentation changes needed
 
 ## Checklist
 
@@ -96,10 +87,6 @@ If this PR introduces breaking changes, provide migration instructions:
 # 3. Update configuration if needed
 ```
 -->
-
-### Future Considerations
-
-<!-- Any follow-up work or considerations for future development. -->
 
 ---
 

@@ -24,3 +24,5 @@ func (c *KeysCommand) Execute(args []string, store *db.InMemoryDB) (string, erro
 func init() {
 	RegisterCommand("KEYS", &KeysCommand{})
 }
+
+func (c *KeysCommand) IsWrite() bool { return false }

@@ -141,8 +141,9 @@ func (db *InMemoryDB) SetExpiration(key string, seconds int) bool {
 	switch v := val.(type) {
 	case *StringValue:
 		v.ExpireAt = &expireAt
+	case *ListValue:
+		v.ExpireAt = &expireAt
 	default:
-		// For now, only StringValue supports expiration
 		return false
 	}
 	
@@ -173,6 +174,11 @@ func (db *InMemoryDB) GetTTL(key string) int {
 			return -2 // Expired
 		}
 		return ttl
+	case *ListValue:
+		if v.ExpireAt == nil { return -1 }
+		ttl := int(time.Until(*v.ExpireAt).Seconds())
+		if ttl < 0 { return -2 }
+		return ttl
 	default:
 		return -1 // No expiration support for this type
 	}
@@ -199,4 +205,64 @@ func (db *InMemoryDB) GetStats() Stats {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 	return db.stats
+}
+
+// max returns the maximum of two ints
+func max(a, b int) int {
+	if a > b { return a }
+	return b
+}
+
+// RangeStrings implements snapshotting only string values
+func (db *InMemoryDB) RangeStrings(yield func(key string, value string, expiresAt *time.Time) bool) {
+	// Create a snapshot of entries to avoid holding read lock while writing
+	type item struct {
+		key string
+		val string
+		exp *time.Time
+	}
+
+	entries := make([]item, 0)
+
+	db.mu.RLock()
+	for k, v := range db.data {
+		if v == nil || v.IsExpired() { continue }
+		switch sv := v.(type) {
+		case *StringValue:
+			entries = append(entries, item{key: k, val: sv.Val, exp: sv.ExpireAt})
+		}
+	}
+	db.mu.RUnlock()
+
+	for _, it := range entries {
+		if cont := yield(it.key, it.val, it.exp); !cont {
+			return
+		}
+	}
+}
+
+// RangeLists implements snapshotting for list values
+func (db *InMemoryDB) RangeLists(yield func(key string, items []string, expiresAt *time.Time) bool) {
+	// Snapshot items to avoid holding lock while writing
+	type listItem struct {
+		key   string
+		items []string
+		exp   *time.Time
+	}
+	entries := make([]listItem, 0)
+
+	db.mu.RLock()
+	for k, v := range db.data {
+		if v == nil || v.IsExpired() { continue }
+		if lv, ok := v.(*ListValue); ok {
+			copied := make([]string, len(lv.Items.GetItems()))
+			copy(copied, lv.Items.GetItems())
+			entries = append(entries, listItem{key: k, items: copied, exp: lv.ExpireAt})
+		}
+	}
+	db.mu.RUnlock()
+
+	for _, it := range entries {
+		if cont := yield(it.key, it.items, it.exp); !cont { return }
+	}
 }

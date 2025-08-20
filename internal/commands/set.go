@@ -125,3 +125,5 @@ func (c *SetCommand) Execute(args []string, store *db.InMemoryDB) (string, error
 func init() {
 	RegisterCommand("SET", &SetCommand{})
 }
+
+func (c *SetCommand) IsWrite() bool { return true }

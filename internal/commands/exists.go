@@ -31,3 +31,5 @@ func (c *ExistsCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 func init() {
 	RegisterCommand("EXISTS", &ExistsCommand{})
 }
+
+func (c *ExistsCommand) IsWrite() bool { return false }

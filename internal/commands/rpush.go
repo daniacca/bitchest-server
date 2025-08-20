@@ -24,37 +24,30 @@ func (c *RPushCommand) Execute(args []string, store *db.InMemoryDB) (string, err
 	if len(args) < 2 {
 		return "", errors.New("wrong number of arguments for 'RPUSH'")
 	}
-
 	key := args[0]
 	values := args[1:]
 
 	val, ok := store.Get(key)
 	if !ok {
-		// If the key doesn't exist, create a new list
-		list := &db.ListValue{
-			Items: db.Queue{},
+		// Create new list
+		l := &db.ListValue{Items: *db.NewQueue()}
+		for _, v := range values {
+			l.Items.Push(v)
 		}
-
-		for _, value := range values {
-			list.Items.Push(value)
-		}
-
-		store.Set(key, list)
-		return protocol.Integer(len(values)), nil
+		store.Set(key, l)
+		return protocol.Integer(l.Items.GetLength()), nil
 	}
 
-	if list, ok := val.(*db.ListValue); ok {
-		// If the key exists, add the value to the list
-		for _, value := range values {
-			list.Items.Push(value)
-		}
-		store.Set(key, list)
-		return protocol.Integer(list.Items.GetLength()), nil
+	list, ok := val.(*db.ListValue)
+	if !ok {
+		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
 	}
-
-	return "", errors.New("wrong type for 'RPUSH'")
+	for _, v := range values {
+		list.Items.Push(v)
+	}
+	return protocol.Integer(list.Items.GetLength()), nil
 }
 
-func init() {
-	RegisterCommand("RPUSH", &RPushCommand{})
-}
+func init() { RegisterCommand("RPUSH", &RPushCommand{}) }
+
+func (c *RPushCommand) IsWrite() bool { return true }

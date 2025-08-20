@@ -43,4 +43,6 @@ func (c *ExpireCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 
 func init() {
 	RegisterCommand("EXPIRE", &ExpireCommand{})
-} 
+}
+
+func (c *ExpireCommand) IsWrite() bool { return true } 

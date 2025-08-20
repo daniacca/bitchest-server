@@ -69,3 +69,5 @@ func (c *RPopCommand) Execute(args []string, store *db.InMemoryDB) (string, erro
 func init() {
 	RegisterCommand("RPOP", &RPopCommand{})
 }
+
+func (c *RPopCommand) IsWrite() bool { return true }

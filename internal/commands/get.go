@@ -37,3 +37,5 @@ func (c *GetCommand) Execute(args []string, store *db.InMemoryDB) (string, error
 func init() {
 	RegisterCommand("GET", &GetCommand{})
 }
+
+func (c *GetCommand) IsWrite() bool { return false }

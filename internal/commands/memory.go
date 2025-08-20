@@ -40,3 +40,5 @@ func (c *MemoryStatsCommand) Execute(args []string, store *db.InMemoryDB) (strin
 func init() {
 	RegisterCommand("MEMORY", &MemoryStatsCommand{})
 }
+
+func (c *MemoryStatsCommand) IsWrite() bool { return false }

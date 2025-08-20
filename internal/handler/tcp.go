@@ -11,10 +11,13 @@ import (
 	"github.com/daniacca/bitchest/internal/commands"
 	"github.com/daniacca/bitchest/internal/db"
 	"github.com/daniacca/bitchest/internal/parser"
+	"github.com/daniacca/bitchest/internal/persistence"
 	"github.com/daniacca/bitchest/internal/protocol"
 )
 
-func Handle(conn net.Conn, store *db.InMemoryDB) {
+// HandleWithPersistence behaves like Handle, but also records mutating
+// commands to the persistence manager's AOF.
+func HandleWithPersistence(conn net.Conn, store *db.InMemoryDB, pm *persistence.Manager) {
 	defer conn.Close()
 
 	clientAddr := conn.RemoteAddr().String()
@@ -76,5 +79,15 @@ func Handle(conn net.Conn, store *db.InMemoryDB) {
 
 		conn.Write([]byte(output))
 		log.Printf("[%s] Command '%s' completed successfully in %v", clientAddr, cmdName, executionTime)
+
+		// Record mutating commands to AOF if persistence is enabled
+		if pm != nil && cmd.IsWrite() {
+			pm.OnMutationRESP([]byte(input))
+		}
 	}
+}
+
+// Handle is the default TCP handler without persistence recording.
+func Handle(conn net.Conn, store *db.InMemoryDB) {
+	HandleWithPersistence(conn, store, nil)
 }

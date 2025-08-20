@@ -31,3 +31,5 @@ func (c *DelCommand) Execute(args []string, store *db.InMemoryDB) (string, error
 func init() {
 	RegisterCommand("DEL", &DelCommand{})
 }
+
+func (c *DelCommand) IsWrite() bool { return true }

@@ -19,31 +19,30 @@ import (
 type LRemCommand struct{}
 
 func (c *LRemCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {
-    if len(args) != 3 {
-        return "", errors.New("wrong number of arguments for 'LREM'")
-    }
-    
-	key, countStr, value := args[0], args[1], args[2]
-    count, err := strconv.Atoi(countStr)
-    if err != nil {
-        return "", errors.New("invalid count for 'LREM'")
-    }
-    
+	if len(args) != 3 {
+		return "", errors.New("wrong number of arguments for 'LREM'")
+	}
+	key := args[0]
+	count, err := strconv.Atoi(args[1])
+	if err != nil {
+		return "", errors.New("value is not an integer or out of range")
+	}
+	value := args[2]
+
 	val, ok := store.Get(key)
-    if !ok {
-        return protocol.Integer(0), nil
-    }
-    
+	if !ok {
+		return protocol.Integer(0), nil
+	}
+
 	list, ok := val.(*db.ListValue)
-    if !ok {
-        return "", errors.New("wrong type for 'LREM'")
-    }
-	
-    removed := list.Items.Remove(value, count)
-    store.Set(key, list)
-    return protocol.Integer(removed), nil
+	if !ok {
+		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	}
+
+	removed := list.Items.Remove(value, count)
+	return protocol.Integer(removed), nil
 }
 
-func init() {
-    RegisterCommand("LREM", &LRemCommand{})
-}
+func init() { RegisterCommand("LREM", &LRemCommand{}) }
+
+func (c *LRemCommand) IsWrite() bool { return true }

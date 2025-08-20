@@ -17,3 +17,5 @@ func (c *PingCommand) Execute(args []string, store *db.InMemoryDB) (string, erro
 func init() {
 	RegisterCommand("PING", &PingCommand{})
 }
+
+func (c *PingCommand) IsWrite() bool { return false }

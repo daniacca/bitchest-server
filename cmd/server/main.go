@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/daniacca/bitchest/internal/commands"
 	"github.com/daniacca/bitchest/internal/db"
 	"github.com/daniacca/bitchest/internal/handler"
+	"github.com/daniacca/bitchest/internal/persistence"
+	"github.com/daniacca/bitchest/internal/persistence/fsadapter"
 )
 
 // Config holds server configuration
@@ -65,6 +70,31 @@ func parseFlags() *Config {
 func StartServer(config *Config) error {
 	store := db.NewDB()
 
+	cfg := persistence.Config{
+		Enabled:           true,
+		Backend:           persistence.BackendFS,
+		FS:                persistence.FSConfig{DataDir: "./data"},
+		AppendFsyncPolicy: "everysec",
+		AOFMaxSegmentMB:   10,
+		SnapshotInterval:  time.Minute * 5,
+	}
+
+	// Create filesystem adapter
+	fsAdapter := fsadapter.New("./data")
+
+	// Create persistence manager
+	manager := persistence.NewManager(cfg, fsAdapter)
+
+	// Start the manager
+	ctx := context.Background()
+	apply := func(line []byte) error {
+		_, _, err := commands.ExecuteLine(string(line), store)
+		return err
+	}
+	if err := manager.Start(ctx, store, apply); err != nil {
+		log.Fatal(err)
+	}
+
 	listener, err := net.Listen("tcp", config.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to bind on %s: %w", config.Addr, err)
@@ -85,7 +115,7 @@ func StartServer(config *Config) error {
 		log.Printf("New client connected: %s", clientAddr)
 		
 		go func() {
-			handler.Handle(connection, store)
+			handler.HandleWithPersistence(connection, store, manager)
 			log.Printf("Client disconnected: %s", clientAddr)
 		}()
 	}

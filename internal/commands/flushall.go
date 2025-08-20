@@ -19,3 +19,5 @@ func (c *FlushAllCommand) Execute(args []string, store *db.InMemoryDB) (string, 
 func init() {
 	RegisterCommand("FLUSHALL", &FlushAllCommand{})
 }
+
+func (c *FlushAllCommand) IsWrite() bool { return true }

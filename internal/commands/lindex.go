@@ -14,7 +14,6 @@ import (
 // If the index is out of range, a null bulk is returned.
 type LIndexCommand struct{}
 
-
 func (c *LIndexCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {
 	if len(args) != 2 {
 		return "", errors.New("wrong number of arguments for 'LINDEX'")
@@ -23,7 +22,7 @@ func (c *LIndexCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 	key := args[0]
 	index, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "", errors.New("value is not an integer or out of range")
+		return "", errors.New("invalid index for 'LINDEX'")
 	}
 
 	val, ok := store.Get(key)
@@ -31,17 +30,20 @@ func (c *LIndexCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 		return protocol.NullBulk(), nil
 	}
 
-	list, ok := val.(*db.ListValue)
-	if !ok {
-		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	if list, ok := val.(*db.ListValue); ok {
+		if index < 0 {
+			index = list.Items.GetLength() + index
+		}
+		
+		item, err := list.Items.Index(index)
+		if err != nil {
+			return protocol.NullBulk(), nil
+		}
+
+		return protocol.Bulk(item), nil
 	}
 
-	item, err := list.Items.Index(index)
-	if err != nil {
-		return protocol.NullBulk(), nil
-	}
-
-	return protocol.Bulk(item), nil
+	return "", errors.New("wrong type for 'LINDEX'")
 }
 
 func init() {

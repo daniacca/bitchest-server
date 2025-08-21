@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/daniacca/bitchest/internal/db"
 	"github.com/daniacca/bitchest/internal/protocol"
 )
@@ -17,26 +20,50 @@ import (
 type LPopCommand struct{}
 
 func (c *LPopCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {
-	if len(args) != 1 {
-		return protocol.Error("wrong number of arguments for 'LPOP'"), nil
+	if len(args) > 2 || len(args) == 0 {
+		return "", errors.New("wrong number of arguments for 'LPOP'")
 	}
+
 	key := args[0]
+	count := 1
+	optionalCount := false
+
+	if len(args) == 2 {
+		argsCount, err := strconv.Atoi(args[1])
+		if err != nil {
+			return "", errors.New("invalid count for 'LPOP'")
+		}
+		count = argsCount
+		optionalCount = true
+	}
 
 	val, ok := store.Get(key)
 	if !ok {
 		return protocol.NullBulk(), nil
 	}
 
-	list, ok := val.(*db.ListValue)
-	if !ok {
-		return protocol.Error("WRONGTYPE Operation against a key holding the wrong kind of value"), nil
+	if list, ok := val.(*db.ListValue); ok {
+		items := []string{}
+		for i := 0; i < count; i++ {
+			item, err := list.Items.Shift()
+			if err != nil {
+				break
+			}
+			items = append(items, item)
+		}
+
+		if len(items) == 0 {
+			return protocol.NullBulk(), nil
+		}
+
+		store.Set(key, list)
+		if optionalCount {
+			return protocol.Array(items), nil
+		}
+		return protocol.Bulk(items[0]), nil
 	}
 
-	item, err := list.Items.Shift()
-	if err != nil {
-		return protocol.NullBulk(), nil
-	}
-	return protocol.Bulk(item), nil
+	return "", errors.New("wrong type for 'LPOP'")
 }
 
 func init() { RegisterCommand("LPOP", &LPopCommand{}) }

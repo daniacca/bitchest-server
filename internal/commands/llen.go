@@ -28,7 +28,7 @@ func (c *LLenCommand) Execute(args []string, store *db.InMemoryDB) (string, erro
 		return protocol.Integer(list.Items.GetLength()), nil
 	}
 
-	return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	return "", errors.New("wrong type for 'LLEN'")
 }
 
 func init() {

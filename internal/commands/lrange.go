@@ -27,11 +27,11 @@ func (c *LRangeCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 	key := args[0]
 	start, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "", errors.New("value is not an integer or out of range")
+		return "", errors.New("invalid start index for 'LRANGE'")
 	}
 	stop, err := strconv.Atoi(args[2])
 	if err != nil {
-		return "", errors.New("value is not an integer or out of range")
+		return "", errors.New("invalid stop index for 'LRANGE'")
 	}
 
 	val, ok := store.Get(key)
@@ -39,19 +39,32 @@ func (c *LRangeCommand) Execute(args []string, store *db.InMemoryDB) (string, er
 		return protocol.Array([]string{}), nil
 	}
 
-	list, ok := val.(*db.ListValue)
-	if !ok {
-		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	if list, ok := val.(*db.ListValue); ok {
+		items := list.Items.GetItems()
+		if start < 0 {
+			start = len(items) + start
+		}
+		
+		if stop < 0 {
+			stop = len(items) + stop
+		}
+		
+		if start >= len(items) {
+			return protocol.Array([]string{}), nil
+		}
+		
+		if stop >= len(items) {
+			stop = len(items) - 1
+		}
+		
+		if start > stop {
+			return protocol.Array([]string{}), nil
+		}
+
+		return protocol.Array(items[start:stop+1]), nil
 	}
 
-	items := list.Items.GetItems()
-	n := len(items)
-	if start < 0 { start = n + start }
-	if stop < 0 { stop = n + stop }
-	if start < 0 { start = 0 }
-	if stop >= n { stop = n - 1 }
-	if start > stop || start >= n { return protocol.Array([]string{}), nil }
-	return protocol.Array(items[start : stop+1]), nil
+	return "", errors.New("wrong type for 'LRANGE'")
 }
 
 func init() {

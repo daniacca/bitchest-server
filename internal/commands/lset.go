@@ -15,30 +15,36 @@ type LSetCommand struct{}
 
 func (c *LSetCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {
 	if len(args) != 3 {
-		return "", errors.New("wrong number of arguments for 'LSET'")
-	}
-	key := args[0]
-	index, err := strconv.Atoi(args[1])
-	if err != nil {
-		return "", errors.New("value is not an integer or out of range")
-	}
-	value := args[2]
-
+        return "", errors.New("wrong number of arguments for 'LSET'")
+    }
+    
+	key, idxStr, value := args[0], args[1], args[2]
+    
+	idx, err := strconv.Atoi(idxStr)
+    if err != nil {
+        return "", errors.New("invalid index for 'LSET'")
+    }
+    
 	val, ok := store.Get(key)
-	if !ok {
-		return "", errors.New("no such key")
-	}
-
+    if !ok {
+        return protocol.NullBulk(), nil
+    }
+    
 	list, ok := val.(*db.ListValue)
-	if !ok {
-		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+    if !ok {
+        return "", errors.New("wrong type for 'LSET'")
+    }
+    
+	if idx < 0 {
+		idx = list.Items.GetLength() + idx
 	}
 
-	if err := list.Items.Set(index, value); err != nil {
-		return "", err
-	}
-
-	return protocol.Simple("OK"), nil
+	if err := list.Items.Set(idx, value); err != nil {
+        return "", errors.New("index out of range")
+    }
+    
+	store.Set(key, list)
+    return protocol.Bulk("OK"), nil
 }
 
 func init() { RegisterCommand("LSET", &LSetCommand{}) }

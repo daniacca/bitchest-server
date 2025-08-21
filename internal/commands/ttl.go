@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"errors"
+
 	"github.com/daniacca/bitchest/internal/db"
 	"github.com/daniacca/bitchest/internal/protocol"
 )
@@ -10,10 +12,12 @@ type TTLCommand struct{}
 
 func (c *TTLCommand) Execute(args []string, store *db.InMemoryDB) (string, error) {
 	if len(args) != 1 {
-		return protocol.Error("wrong number of arguments for 'TTL'"), nil
+		return "", errors.New("wrong number of arguments for 'TTL'")
 	}
+
 	key := args[0]
-	return protocol.Integer(store.GetTTL(key)), nil
+	ttl := store.GetTTL(key)
+	return protocol.Integer(ttl), nil
 }
 
 func init() { RegisterCommand("TTL", &TTLCommand{}) }

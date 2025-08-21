@@ -30,23 +30,29 @@ func (c *LPushCommand) Execute(args []string, store *db.InMemoryDB) (string, err
 
 	val, ok := store.Get(key)
 	if !ok {
-		// Create new list
-		l := &db.ListValue{Items: *db.NewQueue()}
-		for _, v := range values {
-			l.Items.Unshift(v)
+		// If the key doesn't exist, create a new list
+		list := &db.ListValue{
+			Items: db.Queue{},
 		}
-		store.Set(key, l)
-		return protocol.Integer(l.Items.GetLength()), nil
+
+		for _, value := range values {
+			list.Items.Unshift(value)
+		}
+
+		store.Set(key, list)
+		return protocol.Integer(len(values)), nil
 	}
 
-	list, ok := val.(*db.ListValue)
-	if !ok {
-		return "", errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	if list, ok := val.(*db.ListValue); ok {
+		// If the key exists, add the value to the list
+		for _, value := range values {
+			list.Items.Unshift(value)
+		}
+		store.Set(key, list)
+		return protocol.Integer(list.Items.GetLength()), nil
 	}
-	for _, v := range values {
-		list.Items.Unshift(v)
-	}
-	return protocol.Integer(list.Items.GetLength()), nil
+
+	return "", errors.New("wrong type for 'LPUSH'")
 }
 
 func init() { RegisterCommand("LPUSH", &LPushCommand{}) }

@@ -67,10 +67,6 @@ Before submitting this pull request, please ensure:
 - [ ] API changes documented
 - [ ] Breaking changes documented
 
-## Screenshots
-
-<!-- If applicable, add screenshots to help explain your changes. -->
-
 ## Additional Notes
 
 <!-- Any additional information that reviewers should know about this pull request. -->
@@ -89,5 +85,3 @@ If this PR introduces breaking changes, provide migration instructions:
 -->
 
 ---
-
-**Note**: Please ensure that your pull request is complete and includes all the information requested above. This helps maintainers review and merge your changes efficiently.

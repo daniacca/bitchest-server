@@ -54,4 +54,34 @@ func TestLLenCommand(t *testing.T) {
 			t.Errorf("Expected 'wrong type for 'LLEN', got %s", err.Error())
 		}
 	})
+
+	t.Run("LLEN should return an error if no key is provided", func(t *testing.T) {
+		store := db.NewDB()
+		command := LLenCommand{}
+
+		_, err := command.Execute([]string{}, store)
+		if err == nil {
+			t.Errorf("Expected error for no arguments, got nil")
+		}
+	})
+
+	t.Run("LLEN should return an error if too many arguments are provided", func(t *testing.T) {
+		store := db.NewDB()
+		store.Set("key", &db.ListValue{ Items: db.Queue{} })
+		command := LLenCommand{}
+
+		_, err := command.Execute([]string{"key", "extra"}, store)
+		if err == nil {
+			t.Errorf("Expected error for too many arguments, got nil")
+		}
+	})
+
+	t.Run("LLEN should be a read operation", func(t *testing.T) {
+		cmd := &LLenCommand{}
+
+		isWrite := cmd.IsWrite()
+		if isWrite {
+			t.Errorf("Expected IsWrite to return false, got true")
+		}
+	})
 }

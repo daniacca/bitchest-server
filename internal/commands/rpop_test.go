@@ -71,4 +71,12 @@ func TestRPopCommand(t *testing.T) {
 			t.Errorf("Expected %s, got %s", protocol.Array([]string{"value2", "value1"}), response)
 		}
 	})
+
+	t.Run("RPOP is a write command", func(t *testing.T) {
+		cmd := &RPopCommand{}
+		isWrite := cmd.IsWrite()
+		if !isWrite {
+			t.Errorf("Expected IsWrite to return true, got false")
+		}
+	})
 }

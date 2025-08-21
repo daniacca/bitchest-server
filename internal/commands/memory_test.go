@@ -162,4 +162,13 @@ func TestMemoryStatsCommand(t *testing.T) {
 			t.Errorf("Expected memory_per_key in result, got: %s", result)
 		}
 	})
+
+	t.Run("memory stats is a read operation", func(t *testing.T) {
+		cmd := &MemoryStatsCommand{}
+
+		isWrite := cmd.IsWrite()
+		if isWrite {
+			t.Errorf("Expected IsWrite to return false, got true")
+		}
+	})
 }

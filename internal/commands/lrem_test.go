@@ -165,4 +165,12 @@ func TestLRemCommand_Execute(t *testing.T) {
 			t.Errorf("expected error for wrong number of arguments")
 		}
 	})
+
+	t.Run("LREM is a write command", func(t *testing.T) {
+		cmd := &LRemCommand{}
+		isWrite := cmd.IsWrite()
+		if !isWrite {
+			t.Errorf("Expected IsWrite to return true, got false")
+		}
+	})
 }

@@ -23,3 +23,12 @@ func TestFlushAllCommand(t *testing.T) {
 		t.Errorf("Expected empty store, got %d keys", len(store.Keys()))
 	}
 }
+
+func TestFlushAllIsWriting(t *testing.T) {
+	cmd := &FlushAllCommand{}
+
+	isWrite := cmd.IsWrite()
+	if !isWrite {
+		t.Errorf("Expected IsWrite to return true, got false")
+	}
+}

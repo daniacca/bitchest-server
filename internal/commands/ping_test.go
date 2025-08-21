@@ -18,3 +18,12 @@ func TestPingCommand(t *testing.T) {
 		t.Errorf("Expected PONG, got %q", out)
 	}
 }
+
+func TestPingIsReading(t *testing.T) {
+	cmd := &PingCommand{}
+
+	isWrite := cmd.IsWrite()
+	if isWrite {
+		t.Errorf("Expected IsWrite to return false, got true")
+	}
+}

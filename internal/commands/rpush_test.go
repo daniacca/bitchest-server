@@ -142,4 +142,12 @@ func TestRPushCommand(t *testing.T) {
 			t.Errorf("Expected value3, got %s", list.Items.GetItems()[2])
 		}
 	})
+
+	t.Run("RPUSH is a write command", func(t *testing.T) {
+		cmd := &RPushCommand{}
+		isWrite := cmd.IsWrite()
+		if !isWrite {
+			t.Errorf("Expected IsWrite to return true, got false")
+		}
+	})
 }

@@ -51,4 +51,13 @@ func TestTTLCommand(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error for wrong number of arguments")
 	}
-} 
+}
+
+func TestTTLIsWriting(t *testing.T) {
+	cmd := &TTLCommand{}
+
+	isWrite := cmd.IsWrite()
+	if isWrite {
+		t.Errorf("Expected IsWrite to return false, got true")
+	}
+}

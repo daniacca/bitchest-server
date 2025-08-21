@@ -32,3 +32,28 @@ func TestExistsCommandWithNoInput(t *testing.T) {
 		t.Errorf("Expected empty response, got %q", out)
 	}
 }
+
+func TestExistsCommandWithNonExistingKey(t *testing.T) {
+	store := db.NewDB()
+	store.Set("a", &db.StringValue{Val: "1"})
+
+	cmd := &ExistsCommand{}
+	out, err := cmd.Execute([]string{"b"}, store)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if !strings.Contains(out, ":0") {
+		t.Errorf("Expected 0 keys to exist, got %q", out)
+	}
+}
+
+func TestExistsIsReading(t *testing.T) {
+	store := db.NewDB()
+	store.Set("a", &db.StringValue{Val: "1"})
+
+	cmd := &ExistsCommand{}
+	isWrite := cmd.IsWrite()
+	if isWrite {
+		t.Errorf("Expected IsWrite to return false, got true")
+	}
+}

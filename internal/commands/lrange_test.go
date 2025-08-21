@@ -131,4 +131,12 @@ func TestLRangeCommand(t *testing.T) {
 			t.Errorf("Expected %s, got %s", protocol.Array([]string{"value2", "value3"}), response)
 		}
 	})
+
+	t.Run("LRANGE is a read command", func(t *testing.T) {
+		cmd := &LRangeCommand{}
+		isWrite := cmd.IsWrite()
+		if isWrite {
+			t.Errorf("Expected IsWrite to return false, got true")
+		}
+	})
 }

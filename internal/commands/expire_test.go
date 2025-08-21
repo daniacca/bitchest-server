@@ -53,4 +53,13 @@ func TestExpireCommand(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error for negative expiration time")
 	}
-} 
+}
+
+func TestExpireIsWriting(t *testing.T) {
+	cmd := &ExpireCommand{}
+
+	isWrite := cmd.IsWrite()
+	if !isWrite {
+		t.Errorf("Expected IsWrite to return true, got false")
+	}
+}

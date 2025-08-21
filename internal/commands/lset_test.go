@@ -113,4 +113,12 @@ func TestLSetCommand(t *testing.T) {
 			t.Errorf("Expected item at index 2 to be 'z', got %s", lv.Items.GetItems()[2])
 		}
 	})
+
+	t.Run("LSET is a write command", func(t *testing.T) {
+		cmd := &LSetCommand{}
+		isWrite := cmd.IsWrite()
+		if !isWrite {
+			t.Errorf("Expected IsWrite to return true, got false")
+		}
+	})
 }

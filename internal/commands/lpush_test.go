@@ -142,4 +142,14 @@ func TestLPushCommand(t *testing.T) {
 			t.Errorf("Expected value1, got %s", list.Items.GetItems()[2])
 		}
 	})
+
+	t.Run("LPUSH is a write command", func(t *testing.T) {
+		cmd := &LPushCommand{}
+		isWrite := cmd.IsWrite()
+		if !isWrite {
+			t.Errorf("Expected IsWrite to return true, got false")
+		}
+	})
+
+	
 }

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/daniacca/bitchest/internal/db"
@@ -108,6 +109,37 @@ func TestLIndexCommand(t *testing.T) {
 
 		if response != protocol.Bulk("value3") {
 			t.Errorf("Expected %s, got %s", protocol.Bulk("value3"), response)
+		}
+	})
+
+	t.Run("LINDEX should return the correct item for a large index", func(t *testing.T) {
+		store := db.NewDB()
+		exisistingList := &db.ListValue{ Items: db.Queue{} }
+		for i := range 1000 {
+			s := fmt.Sprintf("%d", i)
+			exisistingList.Items.Push("value" + s)
+		}
+		store.Set("key", exisistingList)
+		command := LIndexCommand{}
+		
+		response, err := command.Execute([]string{"key", "999"}, store)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+
+		if response != protocol.Bulk("value999") {
+			t.Errorf("Expected %s, got %s", protocol.Bulk("value999"), response)
+		}
+	})
+
+	t.Run("LINDEX should be a read operation", func(t *testing.T) {
+		store := db.NewDB()
+		store.Set("key", &db.ListValue{ Items: db.Queue{} })
+		command := LIndexCommand{}
+		
+		isWrite := command.IsWrite()
+		if isWrite {
+			t.Errorf("Expected IsWrite to return false, got true")
 		}
 	})
 }

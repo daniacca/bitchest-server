@@ -51,4 +51,13 @@ func TestKeysCommand(t *testing.T) {
 			t.Errorf("Expected key '%s' not found in result: %s", expectedKey, result)
 		}
 	}
-} 
+}
+
+func TestKeysIsReading(t *testing.T) {
+	cmd := &KeysCommand{}
+
+	isWrite := cmd.IsWrite()
+	if isWrite {
+		t.Errorf("Expected IsWrite to return false, got true")
+	}
+}

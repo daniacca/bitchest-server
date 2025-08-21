@@ -295,3 +295,12 @@ func TestSetCommand_InvalidOption(t *testing.T) {
 		t.Fatal("Expected error on invalid option")
 	}
 }
+
+func TestSetCommandIsWrite(t *testing.T) {
+	cmd := &SetCommand{}
+
+	isWrite := cmd.IsWrite()
+	if !isWrite {
+		t.Errorf("Expected IsWrite to return true, got false")
+	}
+}

@@ -47,3 +47,14 @@ func TestDelWithNonExistingKey(t *testing.T) {
 		t.Errorf("Expected 0 keys deleted, got %q", out)
 	}
 }
+
+func TestDelIsWriting(t *testing.T) {
+	store := db.NewDB()
+	store.Set("a", &db.StringValue{Val: "1"})
+
+	cmd := &DelCommand{}
+	isWrite := cmd.IsWrite()
+	if !isWrite {
+		t.Errorf("Expected IsWrite to return true, got false")
+	}
+}

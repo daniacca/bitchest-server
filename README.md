@@ -129,16 +129,34 @@ The Bitchest server supports command-line configuration:
 # Custom host and port
 ./out/bitchest -host 0.0.0.0 -port 6379
 
-# Show help
-./out/bitchest -h
+# Disable persistence
+./out/bitchest -enable-persistence=false
+
+# Filesystem backend and data dir
+./out/bitchest -support fs -out-dir ./data
+
+# Tune snapshot interval (minutes) and AOF segment size (MB)
+./out/bitchest -snapshot-interval 5 -aof-max-segment-mb 10
 ```
 
 ### Configuration Options
 
-| Flag    | Default     | Description                |
-| ------- | ----------- | -------------------------- |
-| `-host` | `localhost` | Host to bind the server to |
-| `-port` | `7463`      | Port to bind the server to |
+| Flag                         | Default     | Description                                |
+| ---------------------------- | ----------- | ------------------------------------------ | ---- | -------------------- |
+| `-host`                      | `localhost` | Host to bind the server to                 |
+| `-port`                      | `7463`      | Port to bind the server to                 |
+| `-enable-persistence`        | `true`      | Enable/disable DB persistence              |
+| `-support`                   | `fs`        | Persistence backend: `fs`                  | `s3` | `minio` (non-fs TBD) |
+| `-out-dir`                   | `./data`    | Data directory for `fs` backend            |
+| `-snapshot-interval`         | `5`         | Snapshot interval in minutes               |
+| `-aof-max-segment-mb`        | `10`        | Max size (MB) of each AOF segment          |
+| `-enable-persistance`        | (alias)     | Deprecated alias for `-enable-persistence` |
+| `-aof-segment-max-dimension` | (alias)     | Deprecated alias for `-aof-max-segment-mb` |
+
+Notes:
+
+- Backends `s3` and `minio` are placeholders; currently the server falls back to `fs`.
+- When using `fs`, `-out-dir` controls where snapshots and AOF segments are stored.
 
 ---
 

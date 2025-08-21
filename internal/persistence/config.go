@@ -1,19 +1,42 @@
 // persistence/config.go
 package persistence
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
-type BackendKind string
+type StorageKind string
 
 const (
-	BackendFS    BackendKind = "fs"
-	BackendS3    BackendKind = "s3"   	// To DO
-	BackendMinIO BackendKind = "minio" 	// To DO
+	StorageFS    StorageKind = "fs"
+	StorageS3    StorageKind = "s3"   	// To DO
+	StorageMinIO StorageKind = "minio" 	// To DO
 )
+
+func (k StorageKind) String() string {
+	return string(k);
+}
+
+func (k *StorageKind) Parse(s string) (error) {
+	validationMap := map[StorageKind]struct{}{
+		StorageFS: {},
+		StorageS3: {},
+		StorageMinIO: {},
+	}
+
+	parsed := StorageKind(s)
+	if _, ok := validationMap[parsed]; !ok {
+		return fmt.Errorf("cannot parse Storage string");
+	}
+
+	*k = parsed
+	return nil
+}
 
 type Config struct {
 	Enabled           bool
-	Backend           BackendKind
+	Backend           StorageKind
 	FS                FSConfig     
 	S3                S3Config     // To DO
 	AppendFsyncPolicy string       // "always" | "everysec" | "no"

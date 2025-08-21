@@ -22,12 +22,22 @@ type Config struct {
 	Host string
 	Port int
 	Addr string // Computed from Host:Port
+	EnablePersistance bool
+	StorageSupport persistence.StorageKind
+	Directory string
+	SnapshotInterval int // minutes
+	AOFMaxSegmentMB int
 }
 
 // Default configuration
 var defaultConfig = Config{
 	Host: "localhost",
 	Port: 7463,
+	EnablePersistance: true,             // persistence enabled
+	StorageSupport: persistence.StorageFS, // default to file system
+	Directory: "./data",
+	SnapshotInterval: 5, // minutes
+	AOFMaxSegmentMB: 10,
 }
 
 // parseFlags parses command line flags and returns configuration
@@ -37,7 +47,12 @@ func parseFlags() *Config {
 	// Define command line flags
 	host := flag.String("host", config.Host, "Host to bind the server to")
 	port := flag.Int("port", config.Port, "Port to bind the server to")
-	
+	enablePersistence := flag.Bool("enable-persistence", config.EnablePersistance, "Enable writing a copy of DB data on persistent storage")
+	storageSupport := flag.String("support", string(config.StorageSupport), "Storage backend for persistence: fs | s3 | minio")
+	dataDirectory := flag.String("out-dir", config.Directory, "Output directory for saving data (fs backend)")
+	snapshotInterval := flag.Int("snapshot-interval", config.SnapshotInterval, "Snapshot interval, in minutes")
+	aofMaxSegmentMB := flag.Int("aof-max-segment-mb", config.AOFMaxSegmentMB, "Max size (MB) per AOF segment")
+
 	// Add help text
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Bitchest - A lightweight in-memory key-value database\n\n")
@@ -45,10 +60,12 @@ func parseFlags() *Config {
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nExamples:\n")
-		fmt.Fprintf(os.Stderr, "  %s                    # Start on localhost:7463\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s -port 6379         # Start on localhost:6379\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s -host 0.0.0.0      # Start on all interfaces\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s -host 0.0.0.0 -port 6379  # Start on all interfaces:6379\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s                                      # Start on localhost:7463\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -port 6379                           # Start on localhost:6379\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -host 0.0.0.0                        # Start on all interfaces\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -host 0.0.0.0 -port 6379             # Start on all interfaces:6379\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -enable-persistence=false            # Disable persistence\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -support fs -out-dir ./data          # Use filesystem backend with data dir\n", os.Args[0])
 	}
 
 	flag.Parse()
@@ -56,6 +73,14 @@ func parseFlags() *Config {
 	// Update config with flag values
 	config.Host = *host
 	config.Port = *port
+	config.EnablePersistance = *enablePersistence
+	if err := config.StorageSupport.Parse(*storageSupport); err != nil {
+		log.Printf("Invalid storage support specified: %q. Valid values: 'fs' | 's3' | 'minio'. Using default '%s'.", *storageSupport, defaultConfig.StorageSupport)
+		config.StorageSupport = defaultConfig.StorageSupport
+	}
+	config.Directory = *dataDirectory
+	config.SnapshotInterval = *snapshotInterval
+	config.AOFMaxSegmentMB = *aofMaxSegmentMB
 
 	// Validate port range
 	if config.Port < 1024 || config.Port > 65535 {
@@ -71,19 +96,26 @@ func StartServer(config *Config) error {
 	store := db.NewDB()
 
 	cfg := persistence.Config{
-		Enabled:           true,
-		Backend:           persistence.BackendFS,
-		FS:                persistence.FSConfig{DataDir: "./data"},
+		Enabled:           config.EnablePersistance,
+		Backend:           config.StorageSupport,
+		FS:                persistence.FSConfig{ DataDir: config.Directory },
 		AppendFsyncPolicy: "everysec",
-		AOFMaxSegmentMB:   10,
-		SnapshotInterval:  time.Minute * 5,
+		AOFMaxSegmentMB:   config.AOFMaxSegmentMB,
+		SnapshotInterval:  time.Minute * time.Duration(config.SnapshotInterval),
 	}
 
-	// Create filesystem adapter
-	fsAdapter := fsadapter.New("./data")
+	// Create storage adapter
+	var storageAdapter persistence.StorageAdapter
+	switch cfg.Backend {
+	case persistence.StorageFS:
+		storageAdapter = fsadapter.New(cfg.FS.DataDir)
+	default:
+		log.Printf("Storage backend %q not implemented yet; falling back to filesystem", cfg.Backend)
+		storageAdapter = fsadapter.New(cfg.FS.DataDir)
+	}
 
 	// Create persistence manager
-	manager := persistence.NewManager(cfg, fsAdapter)
+	manager := persistence.NewManager(cfg, storageAdapter)
 
 	// Start the manager
 	ctx := context.Background()
@@ -115,7 +147,11 @@ func StartServer(config *Config) error {
 		log.Printf("New client connected: %s", clientAddr)
 		
 		go func() {
-			handler.HandleWithPersistence(connection, store, manager)
+			if cfg.Enabled {
+				handler.HandleWithPersistence(connection, store, manager)
+			} else {
+				handler.Handle(connection, store)
+			}
 			log.Printf("Client disconnected: %s", clientAddr)
 		}()
 	}

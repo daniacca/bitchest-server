@@ -86,7 +86,7 @@ func restoreSnapshot(reader io.ReadCloser, apply func([]byte) error) error {
 	defer reader.Close()
 
 	// Read and validate header
-	header := make([]byte, 19) // "BITCHEST_SNAPSHOT_V1"
+	header := make([]byte, 20) // "BITCHEST_SNAPSHOT_V1"
 	if _, err := io.ReadFull(reader, header); err != nil {
 		return err
 	}

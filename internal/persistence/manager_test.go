@@ -239,6 +239,7 @@ func TestManager_Start_SaveManifestError(t *testing.T) {
 		manifest:        &Manifest{Version: 1, AOFSeq: 0},
 		saveManifestErr: io.ErrUnexpectedEOF,
 	}
+	
 	mgr := NewManager(cfg, fakeSt)
 	err := mgr.Start(context.Background(), nil, nil)
 	if err == nil {
@@ -246,3 +247,117 @@ func TestManager_Start_SaveManifestError(t *testing.T) {
 	}
 }
 
+func TestManager_Stop_NoAOFOrSnap(t *testing.T) {
+	cfg := Config{
+		Enabled:           true,
+		AOFMaxSegmentMB:   10,
+		AppendFsyncPolicy: "always",
+		SnapshotInterval:  0,
+	}
+	st := &fakeStorageAdapter{}
+	mgr := NewManager(cfg, st)
+	
+	// Both aof and snap are nil
+	err := mgr.Stop(context.Background())
+	if err != nil {
+		t.Errorf("Expected nil error, got %v", err)
+	}
+}
+
+type fakeAOFWriter struct {
+	syncCalled  bool
+	closeCalled bool
+}
+
+func (f *fakeAOFWriter) Append([]byte) error { return nil }
+func (f *fakeAOFWriter) Sync() error         { f.syncCalled = true; return nil }
+func (f *fakeAOFWriter) Close() error        { f.closeCalled = true; return nil }
+func (f *fakeAOFWriter) SizeMB() int64       { return 0 }
+
+type fakeSnapshotter struct {
+	stopCalled bool
+}
+
+func (f *fakeSnapshotter) Start(ctx context.Context, dumpFn func(SyncWriteCloser) error, onSuccess func(string)) {}
+
+func (f *fakeSnapshotter) Stop() { f.stopCalled = true }
+
+func TestManager_Stop_WithAOFAndSnap(t *testing.T) {
+	cfg := Config{
+		Enabled:           true,
+		AOFMaxSegmentMB:   10,
+		AppendFsyncPolicy: "always",
+		SnapshotInterval:  0,
+	}
+	st := &fakeStorageAdapter{}
+	mgr := NewManager(cfg, st)
+	fakeAOF := &fakeAOFWriter{}
+	fakeSnap := &fakeSnapshotter{}
+	mgr.aof = fakeAOF
+	mgr.snap = fakeSnap
+
+	err := mgr.Stop(context.Background())
+	if err != nil {
+		t.Errorf("Expected nil error, got %v", err)
+	}
+	if !fakeAOF.syncCalled {
+		t.Errorf("Expected Sync to be called on aof")
+	}
+	if !fakeAOF.closeCalled {
+		t.Errorf("Expected Close to be called on aof")
+	}
+	if !fakeSnap.stopCalled {
+		t.Errorf("Expected Stop to be called on snap")
+	}
+}
+
+func TestManager_OnMutationRESP_NoAOF(t *testing.T) {
+	cfg := Config{
+		Enabled:           true,
+		AOFMaxSegmentMB:   10,
+		AppendFsyncPolicy: "always",
+		SnapshotInterval:  0,
+	}
+	st := &fakeStorageAdapter{}
+	mgr := NewManager(cfg, st)
+	mgr.aof = nil // aof is nil
+
+	// Should not panic or call anything
+	mgr.OnMutationRESP([]byte("SET foo bar"))
+	// No assertion needed, just ensure no panic
+}
+
+type aofWriterMock struct {
+	appendCalled bool
+	sizeMB       int64
+	rotateCalled bool
+}
+
+func (a *aofWriterMock) Append(cmd []byte) error {
+	a.appendCalled = true
+	return nil
+}
+func (a *aofWriterMock) Sync() error  { return nil }
+func (a *aofWriterMock) Close() error { return nil }
+func (a *aofWriterMock) SizeMB() int64 {
+	return a.sizeMB
+}
+
+func TestManager_OnMutationRESP_Appends(t *testing.T) {
+	cfg := Config{
+		Enabled:           true,
+		AOFMaxSegmentMB:   10,
+		AppendFsyncPolicy: "always",
+		SnapshotInterval:  0,
+	}
+	st := &fakeStorageAdapter{}
+	mgr := NewManager(cfg, st)
+	mockAOF := &aofWriterMock{sizeMB: 0}
+	mgr.aof = mockAOF
+
+	mgr.OnMutationRESP([]byte("SET foo bar"))
+
+	if !mockAOF.appendCalled {
+		t.Errorf("Expected Append to be called")
+	}
+}

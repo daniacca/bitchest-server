@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+// AOFWriter defines the interface for append-only file writers.
+type AOFWriter interface {
+    Append(cmd []byte) error
+    SizeMB() int64
+    Sync() error
+    Close() error
+}
+
 type aofWriter struct {
 	writer   SyncWriteCloser
 	buffer   *bufio.Writer

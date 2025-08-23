@@ -16,8 +16,8 @@ type Store interface {
 type Manager struct {
 	cfg      Config
 	st       StorageAdapter
-	aof      *aofWriter
-	snap     *snapshotter
+	aof      AOFWriter
+	snap     Snapshotter
 	manifest *Manifest
 }
 

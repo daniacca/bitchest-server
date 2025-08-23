@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type Snapshotter interface {
+    Start(ctx context.Context, dumpFn func(SyncWriteCloser) error, onSuccess func(string))
+    Stop()
+}
+
 type snapshotter struct {
 	storage  StorageAdapter
 	interval time.Duration
